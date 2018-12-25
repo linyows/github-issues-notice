@@ -18,6 +18,11 @@ Usage
     $ npx clasp push
     ```
 1. Create google spreadsheet
+    Channel | Time           | Mention | Repository         | Label,Threshold,Message
+    ---     | ---            | ---     | ---                | ---
+    general | 10<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP,5,There are a lot of things in progress.
+    dev     | 13<br>18       |         | foo/abc            | needs-review,3,@techlead Please need review
+    ...     | ...            | ...     | ...                | ...
 1. Set environments
     - SLACK_ACCESS_TOKEN
     - GITHUB_ACCESS_TOKEN
