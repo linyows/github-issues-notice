@@ -17,11 +17,12 @@ Usage
     $ npx clasp create 'GitHub Issue Notice' --rootDir ./src
     $ npx clasp push
     ```
-1. Create google spreadsheet
+1. Create google spreadsheet. For example:
+
     Channel | Time           | Mention | Repository         | Label,Threshold,Message
     ---     | ---            | ---     | ---                | ---
     general | 10<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP,5,There are a lot of things in progress.
-    dev     | 13<br>18       |         | foo/abc            | needs-review,3,@techlead Please need review
+    dev     | 13<br>18       | @sre    | foo/abc            | needs-review,3,@techlead Please need review.<br>WIP,5,Yo.
     ...     | ...            | ...     | ...                | ...
 1. Set environments
     - SLACK_ACCESS_TOKEN
