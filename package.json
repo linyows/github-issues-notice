@@ -1,7 +1,7 @@
 {
   "name": "github-issue-notice",
   "version": "1.0.0",
-  "description": "Notify open issue to slack",
+  "description": "Notify slack the title of the specified repository and label issues on GAS.",
   "scripts": {
     "ci": "npm i && npm run lint",
     "lint": "tslint src/*.ts",
