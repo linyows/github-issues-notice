@@ -22,7 +22,7 @@ class Github {
 
   public get headers(): any {
     return {
-      'Authorization': `token ${this.token}`
+      Authorization: `token ${this.token}`
     }
   }
 
@@ -173,6 +173,7 @@ class GithubIssueNotice {
       const numColumn = this.sheet.getLastColumn()
       this.pData = this.sheet.getSheetValues(startRow, startColumn, numRow, numColumn)
     }
+
     return this.pData
   }
 
@@ -204,8 +205,11 @@ class GithubIssueNotice {
     if (!word) {
       return word
     }
+
     return word.replace(/\w\S*/g, (t) => {
-      return `${t.charAt(0).toUpperCase()}${t.substr(1).toLowerCase()}`
+      return `${t.charAt(0)
+                 .toUpperCase()}${t.substr(1)
+                                   .toLowerCase()}`
     })
   }
 
@@ -213,6 +217,7 @@ class GithubIssueNotice {
     if (GithubIssueNotice.IS_HOLIDAY(this.config.now)) {
       return
     }
+
     const job = this.selectJobMatchTime()
     for (const t of job) {
       this.doTask(t)
@@ -221,18 +226,18 @@ class GithubIssueNotice {
 
   private doTask(task: ITask) {
     for (const repo of task.repos) {
-      if (repo == '') {
+      if (repo === '') {
         continue
       }
-      for (let i in task.labels) {
-        const issues = this.github.issues(repo, task.labels[i].name)
-        for (const issue of issues) {
-          for (const l of issue.labels) {
-            if (l.name == task.labels[i].name) {
-              task.labels[i].color = l.color
+      for (const l of task.labels) {
+        const issues = this.github.issues(repo, l.name)
+        for (const i of issues) {
+          for (const ll of i.labels) {
+            if (l.name === ll.name) {
+              l.color = ll.color
             }
           }
-          task.labels[i].issueTitles.push(`<${issue.html_url}|${issue.title}>(${repo}) by ${issue.user.login}`)
+          l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
         }
       }
     }
@@ -245,12 +250,12 @@ class GithubIssueNotice {
     let mention = ` ${task.mentions.join(' ')} `
 
     for (const l of task.labels) {
-      if (l.issueTitles.length == 0) {
+      if (l.issueTitles.length === 0) {
         continue
       }
       const h = l.name.replace(/\-/g, ' ')
       attachments.push({
-        title: `${h.toUpperCase() == h ? h : GithubIssueNotice.CAPITALIZE(h)}s`,
+        title: `${h.toUpperCase() === h ? h : GithubIssueNotice.CAPITALIZE(h)}s`,
         color: l.color,
         text: l.issueTitles.join('\n')
       })
@@ -259,7 +264,7 @@ class GithubIssueNotice {
       }
     }
 
-    if (messages.length == 0) {
+    if (messages.length === 0) {
       messages.push(this.config.slack.textEmpty)
       mention = ''
     }
@@ -276,22 +281,34 @@ class GithubIssueNotice {
   }
 
   private selectJobMatchTime(): any {
-    let job: ITask[] = []
+    const channelColumn = 0
+    const timeColumn = 1
+    const mentionColumn = 2
+    const repoColumn = 3
+    const labelColumn = 4
+
+    const nameField = 0
+    const thresholdField = 1
+    const messageField = 2
+
+    const job: ITask[] = []
+
     for (const task of this.data) {
-      const channels = `${task[0]}`.split('\n')
-      const times = `${task[1]}`.split('\n')
-      const mentions = `${task[2]}`.split('\n')
-      const repos = `${task[3]}`.split('\n')
-      const labelsWithInfo = `${task[4]}`.split('\n')
+      const channels = `${task[channelColumn]}`.split('\n')
+      const times = `${task[timeColumn]}`.split('\n')
+      const mentions = `${task[mentionColumn]}`.split('\n')
+      const repos = `${task[repoColumn]}`.split('\n')
+      const labelsWithInfo = `${task[labelColumn]}`.split('\n')
+
       for (const time of times) {
-        if (time == `${this.config.now.getHours()}`) {
-          let labels: ILabel[] = []
+        if (time === `${this.config.now.getHours()}`) {
+          const labels: ILabel[] = []
           for (const l of labelsWithInfo) {
             const arr = `${l}`.split(',')
             labels.push({
-              name: arr[0],
-              threshold: +arr[1],
-              message: arr[2],
+              name: arr[nameField],
+              threshold: +arr[thresholdField],
+              message: arr[messageField],
               color: '',
               issueTitles: []
             })
@@ -300,6 +317,7 @@ class GithubIssueNotice {
         }
       }
     }
+
     return job
   }
 }
@@ -333,7 +351,7 @@ const noticer = new GithubIssueNotice({
   spreadsheets: {
     id: sheetId,
     url: sheetUrl
-  },
+  }
 })
 
 /**
