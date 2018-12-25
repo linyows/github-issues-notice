@@ -1,0 +1,65 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:latest",
+    "tslint-microsoft-contrib/recommended_ruleset"
+  ],
+  "jsRules": {},
+  "rules": {
+    "no-import-side-effect": [true, {"ignore-module": "reflect-metadata"}],
+    "quotemark": [true, "single"],
+    "semicolon": [true, "never"],
+    "completed-docs": false,
+    "missing-jsdoc": false,
+    "no-empty-interface": false,
+    "ordered-imports": false,
+    "arrow-parens": [
+      true
+    ],
+    "arrow-return-shorthand": [
+      true
+    ],
+    "curly": true,
+    "export-name": false,
+    "import-name": false,
+    "interface-over-type-literal": true,
+    "linebreak-style": [
+      "LF",
+      true
+    ],
+    "no-any": false,
+    "no-default-export": false,
+    "no-internal-module": true,
+    "no-magic-numbers": true,
+    "no-misused-new": true,
+    "no-relative-imports": false,
+    "no-unnecessary-initializer": true,
+    "no-unsafe-any": false,
+    "no-string-literal": false,
+    "prefer-function-over-method": true,
+    "prefer-method-signature": true,
+    "typedef": [
+      true,
+      "parameter",
+      "property-declaration",
+      "member-variable-declaration"
+    ],
+    "insecure-random": false,
+    "no-cookies": false,
+    "no-use-before-declare": false,
+    "await-promise": false,
+    "match-default-export-name": false,
+    "no-floating-promises": false,
+    "no-for-in-array": false,
+    "promise-function-async": false,
+    "restrict-plus-operands": false,
+    "strict-boolean-expressions": false,
+    "no-unnecessary-qualifier": false,
+    "no-unnecessary-type-assertion": false,
+    "no-void-expression": false,
+    "use-default-type-parameter": false
+  },
+  "rulesDirectory": [
+    "node_modules/tslint-microsoft-contrib"
+  ]
+}
