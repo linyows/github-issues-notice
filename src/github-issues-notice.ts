@@ -270,7 +270,7 @@ class GithubIssuesNotice {
     }
 
     for (const ch of task.channels) {
-      this.slack.postMessage('z', {
+      this.slack.postMessage(ch, {
         username: this.config.slack.username,
         icon_emoji: ':octocat:',
         link_names: 1,
