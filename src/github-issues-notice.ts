@@ -101,6 +101,7 @@ interface ISlackConfig {
   username: string
   textSuffix: string
   textEmpty: string
+  textDefault: string
 }
 
 interface ISpreadsheetsConfig {
@@ -265,8 +266,12 @@ class GithubIssuesNotice {
     }
 
     if (messages.length === 0) {
-      messages.push(this.config.slack.textEmpty)
-      mention = ''
+      if (attachments.length === 0) {
+        messages.push(this.config.slack.textEmpty)
+        mention = ''
+      } else {
+        messages.push(this.config.slack.textDefault)
+      }
     }
 
     for (const ch of task.channels) {
@@ -352,7 +357,8 @@ const notice = new GithubIssuesNotice({
       .getProperty('SLACK_ACCESS_TOKEN'),
     username: 'GitHub Issues Notice',
     textSuffix: ` <${sheetUrl}|通知設定> <${projectUrl}|これは何？>`,
-    textEmpty: 'Wow, We did it! :tada:'
+    textEmpty: 'Wow, We did it! :tada:',
+    textDefault: 'チェックしてね :muscle:'
   },
   spreadsheets: {
     id: sheetId,
