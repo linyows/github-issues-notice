@@ -22,7 +22,7 @@ Usage
     Channel | Time           | Mention | Repository         | Label,Threshold,Message
     ---     | ---            | ---     | ---                | ---
     general | 10<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP,5,There are a lot of things in progress.
-    dev     | 13<br>18       | @sre    | foo/abc            | needs-review,3,@techlead Please need review.<br>WIP,5,Yo.
+    dev     | 13<br>1750     | @sre    | foo/abc            | needs-review,3,@techlead Please need review.<br>WIP,5,Yo.
     ...     | ...            | ...     | ...                | ...
     - Sheet name is `config`
     - Config start 2nd row, 1st row is subject
@@ -35,8 +35,8 @@ Usage
     - Choose which function to run: `notify`
     - Which run at deployment: `head`
     - Select event source: `Time-driven`
-    - Select type of time based trigger: `Hour timer`
-    - Select hour interval: `Every hour`
+    - Select type of time based trigger: `Minute timer`
+    - Select hour interval: `Every minute`
 
 Contribution
 ------------
