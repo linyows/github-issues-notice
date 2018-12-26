@@ -214,6 +214,15 @@ class GithubIssuesNotice {
     })
   }
 
+  public static NORMALIZE(str: string): string[] {
+    const arr = str.split('\n')
+    for (let v of arr) {
+      v = v.trim()
+    }
+
+    return arr
+  }
+
   public doJob(): void {
     if (GithubIssuesNotice.IS_HOLIDAY(this.config.now)) {
       return
@@ -304,11 +313,11 @@ class GithubIssuesNotice {
     const nowM = `00${this.config.now.getMinutes()}`.slice(-timeLength)
 
     for (const task of this.data) {
-      const channels = `${task[channelColumn]}`.split('\n')
-      const times = `${task[timeColumn]}`.split('\n')
-      const mentions = `${task[mentionColumn]}`.split('\n')
-      const repos = `${task[repoColumn]}`.split('\n')
-      const labelsWithInfo = `${task[labelColumn]}`.split('\n')
+      const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
+      const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
+      const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
+      const repos = GithubIssuesNotice.NORMALIZE(`${task[repoColumn]}`)
+      const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
 
       for (const time of times) {
         const hour = time.substr(0, timeLength)
