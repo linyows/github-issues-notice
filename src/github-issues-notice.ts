@@ -1,5 +1,5 @@
 /**
- * GitHub issue notification
+ * GitHub issues notice
  *
  * Copyright (c) 2018 Tomohisa Oda
  */
@@ -132,9 +132,9 @@ interface ILabel {
 }
 
 /**
- * GithubIssueNotice
+ * GithubIssuesNotice
  */
-class GithubIssueNotice {
+class GithubIssuesNotice {
 
   private get slack(): any {
     if (this.pSlack === undefined) {
@@ -214,7 +214,7 @@ class GithubIssueNotice {
   }
 
   public doJob(): void {
-    if (GithubIssueNotice.IS_HOLIDAY(this.config.now)) {
+    if (GithubIssuesNotice.IS_HOLIDAY(this.config.now)) {
       return
     }
 
@@ -255,7 +255,7 @@ class GithubIssueNotice {
       }
       const h = l.name.replace(/\-/g, ' ')
       attachments.push({
-        title: `${h.toUpperCase() === h ? h : GithubIssueNotice.CAPITALIZE(h)}s`,
+        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}s`,
         color: l.color,
         text: l.issueTitles.join('\n')
       })
@@ -329,8 +329,9 @@ const sheetId = PropertiesService
   .getScriptProperties()
   .getProperty('SHEET_ID')
 const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`
+const projectUrl = 'https://github.com/linyows/github-issues-notice'
 
-const noticer = new GithubIssueNotice({
+const notice = new GithubIssuesNotice({
   now: new Date(),
   github: {
     token: PropertiesService
@@ -344,8 +345,8 @@ const noticer = new GithubIssueNotice({
     token: PropertiesService
       .getScriptProperties()
       .getProperty('SLACK_ACCESS_TOKEN'),
-    username: 'GitHub Issue Notice',
-    textSuffix: ` <${sheetUrl}|通知設定の変更>`,
+    username: 'GitHub Issues Notice',
+    textSuffix: ` <${sheetUrl}|通知設定> <${projectUrl}|これは何？>`,
     textEmpty: 'Wow, We did it! :tada:'
   },
   spreadsheets: {
@@ -358,5 +359,5 @@ const noticer = new GithubIssueNotice({
  * notify notify labeled issues to slack
  */
 function notify() {
-  noticer.doJob()
+  notice.doJob()
 }

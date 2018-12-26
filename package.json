@@ -1,5 +1,5 @@
 {
-  "name": "github-issue-notice",
+  "name": "github-issues-notice",
   "version": "1.0.0",
   "description": "Notify slack the title of the specified repository and label issues on GAS.",
   "scripts": {
@@ -17,7 +17,7 @@
   ],
   "author": "linyows",
   "license": "MIT",
-  "homepage": "https://github.com/linyows/github-issue-notice",
+  "homepage": "https://github.com/linyows/github-issues-notice",
   "dependencies": {
     "@types/google-apps-script": "0.0.33"
   }
