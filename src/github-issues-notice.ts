@@ -317,7 +317,7 @@ class GithubIssuesNotice {
         if (hour === nowH && min === nowM) {
           const labels: ILabel[] = []
           for (const l of labelsWithInfo) {
-            const arr = `${l}`.split(',')
+            const arr = `${l}`.split('/')
             labels.push({
               name: arr[nameField],
               threshold: +arr[thresholdField],
