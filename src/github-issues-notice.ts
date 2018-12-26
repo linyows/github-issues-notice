@@ -297,6 +297,11 @@ class GithubIssuesNotice {
     const messageField = 2
 
     const job: ITask[] = []
+    const timeLength = 2
+    const timeFullLength = 4
+    const minStart = 2
+    const nowH = `${this.config.now.getHours()}`
+    const nowM = `00${this.config.now.getMinutes()}`.slice(-timeLength)
 
     for (const task of this.data) {
       const channels = `${task[channelColumn]}`.split('\n')
@@ -306,12 +311,10 @@ class GithubIssuesNotice {
       const labelsWithInfo = `${task[labelColumn]}`.split('\n')
 
       for (const time of times) {
-        const timeLength = 2
-        const timeFullLength = 4
-        const minStart = 2
         const hour = time.substr(0, timeLength)
         const min = time.length === timeFullLength ? time.substr(minStart, timeLength) : '00'
-        if (hour === `${this.config.now.getHours()}` && min === `${this.config.now.getMinutes()}`) {
+
+        if (hour === nowH && min === nowM) {
           const labels: ILabel[] = []
           for (const l of labelsWithInfo) {
             const arr = `${l}`.split(',')
