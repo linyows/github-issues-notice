@@ -14,6 +14,8 @@ Slack notification example is:
 Usage
 -----
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/linyows/github-issues-notice.svg)](https://greenkeeper.io/)
+
 1. Deploy this
     ```sh
     $ npm i
