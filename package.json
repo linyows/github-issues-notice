@@ -19,6 +19,6 @@
   "license": "MIT",
   "homepage": "https://github.com/linyows/github-issues-notice",
   "dependencies": {
-    "@types/google-apps-script": "0.0.33"
+    "@types/google-apps-script": "0.0.35"
   }
 }
