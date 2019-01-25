@@ -234,19 +234,23 @@ export class GithubIssuesNotice {
     const nowM = `00${this.config.now.getMinutes()}`.slice(-timeLength)
 
     for (const task of this.data) {
+      const repos = GithubIssuesNotice.NORMALIZE(`${task[repoColumn]}`)
+      if (repos.length === 0) {
+        continue
+      }
+
       const enabled = task[enabledColumn]
       if (typeof enabled === 'boolean') {
         if (!enabled) {
           continue
         }
       } else {
-        console.error('"enabled" columns must be of type boolean')
+        console.error(`"enabled" columns must be of type boolean: ${enabled}`)
       }
 
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
-      const repos = GithubIssuesNotice.NORMALIZE(`${task[repoColumn]}`)
       const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
 
       for (const time of times) {
