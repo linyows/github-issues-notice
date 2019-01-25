@@ -30,9 +30,9 @@ const notice = new GithubIssuesNotice({
       .getScriptProperties()
       .getProperty('SLACK_ACCESS_TOKEN'),
     username: 'GitHub Issues Notice',
-    textSuffix: ` <${sheetUrl}|通知設定> <${projectUrl}|これは何？>`,
-    textEmpty: 'Wow, We did it! :tada:',
-    textDefault: 'チェックしてね :muscle:'
+    textSuffix: ` <${sheetUrl}|Settings> <${projectUrl}|About>`,
+    textEmpty: 'Wow, No open issues! We did it! :tada:',
+    textDefault: 'Check it out :point_down:'
   },
   spreadsheets: {
     id: sheetId,
