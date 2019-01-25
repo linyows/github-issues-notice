@@ -4,92 +4,8 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-/**
- * Github Client
- */
-class Github {
-  private token: string
-  private apiEndpoint: string
-
-  constructor(token: string, apiEndpoint?: string) {
-    this.token = token
-    if (apiEndpoint) {
-      this.apiEndpoint = apiEndpoint
-    } else {
-      this.apiEndpoint = 'https://api.github.com/'
-    }
-  }
-
-  public get headers(): any {
-    return {
-      Authorization: `token ${this.token}`
-    }
-  }
-
-  public issues(repo: string, labels: string) {
-    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues?labels=${labels}`, {
-      method: 'get',
-      headers: this.headers
-    })
-
-    return JSON.parse(res.getContentText())
-  }
-}
-
-interface ISlackField {
-  title: string
-  value: string
-}
-
-interface ISlackAttachment {
-  title: string
-  title_link: string
-  color: string
-  text: string
-  fields?: ISlackField[]
-}
-
-interface ISlackPostMessageOpts {
-  username: string
-  icon_emoji: string
-  link_names: number
-  text: string
-  attachments?: string
-}
-
-/**
- * Slack Client
- */
-class Slack {
-  private token: string
-
-  constructor(token: string) {
-    this.token = token
-  }
-
-  public joinChannel(channel: string): boolean {
-    const res = UrlFetchApp.fetch('https://slack.com/api/channels.join', {
-      method: 'post',
-      payload: {
-        token: this.token,
-        name: channel
-      }
-    })
-
-    return JSON.parse(res.getContentText()).ok
-  }
-
-  public postMessage(channel: string, opts: ISlackPostMessageOpts) {
-    this.joinChannel(channel)
-
-    const res = UrlFetchApp.fetch('https://slack.com/api/chat.postMessage', {
-      method: 'post',
-      payload: { ...{ token: this.token, channel: channel }, ...opts }
-    })
-
-    return JSON.parse(res.getContentText()).ok
-  }
-}
+import {Github} from './github'
+import {Slack} from './slack'
 
 interface IGithubConfig {
   token: string
@@ -135,7 +51,7 @@ interface ILabel {
 /**
  * GithubIssuesNotice
  */
-class GithubIssuesNotice {
+export class GithubIssuesNotice {
 
   private get slack(): any {
     if (this.pSlack === undefined) {
@@ -350,45 +266,4 @@ class GithubIssuesNotice {
 
     return job
   }
-}
-
-/**
- * Main
- */
-const sheetId = PropertiesService
-  .getScriptProperties()
-  .getProperty('SHEET_ID')
-const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`
-const projectUrl = 'https://github.com/linyows/github-issues-notice'
-
-const notice = new GithubIssuesNotice({
-  now: new Date(),
-  github: {
-    token: PropertiesService
-      .getScriptProperties()
-      .getProperty('GITHUB_ACCESS_TOKEN'),
-    apiEndpoint: PropertiesService
-      .getScriptProperties()
-      .getProperty('GITHUB_API_ENDPOINT')
-  },
-  slack: {
-    token: PropertiesService
-      .getScriptProperties()
-      .getProperty('SLACK_ACCESS_TOKEN'),
-    username: 'GitHub Issues Notice',
-    textSuffix: ` <${sheetUrl}|通知設定> <${projectUrl}|これは何？>`,
-    textEmpty: 'Wow, We did it! :tada:',
-    textDefault: 'チェックしてね :muscle:'
-  },
-  spreadsheets: {
-    id: sheetId,
-    url: sheetUrl
-  }
-})
-
-/**
- * notify notify labeled issues to slack
- */
-function notify() {
-  notice.doJob()
 }
