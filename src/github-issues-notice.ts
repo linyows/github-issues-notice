@@ -240,14 +240,18 @@ class GithubIssuesNotice {
         continue
       }
       for (const l of task.labels) {
-        const issues = this.github.issues(repo, l.name)
-        for (const i of issues) {
-          for (const ll of i.labels) {
-            if (l.name === ll.name) {
-              l.color = ll.color
+        try {
+          const issues = this.github.issues(repo, l.name)
+          for (const i of issues) {
+            for (const ll of i.labels) {
+              if (l.name === ll.name) {
+                l.color = ll.color
+              }
             }
+            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
           }
-          l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
+        } catch (e) {
+          console.error(e)
         }
       }
     }
@@ -284,13 +288,17 @@ class GithubIssuesNotice {
     }
 
     for (const ch of task.channels) {
-      this.slack.postMessage(ch, {
-        username: this.config.slack.username,
-        icon_emoji: ':octocat:',
-        link_names: 1,
-        text: `${mention}${messages.join(' ')}${this.config.slack.textSuffix}`,
-        attachments: JSON.stringify(attachments)
-      })
+      try {
+        this.slack.postMessage(ch, {
+          username: this.config.slack.username,
+          icon_emoji: ':octocat:',
+          link_names: 1,
+          text: `${mention}${messages.join(' ')}${this.config.slack.textSuffix}`,
+          attachments: JSON.stringify(attachments)
+        })
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 
