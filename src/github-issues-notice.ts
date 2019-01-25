@@ -215,11 +215,12 @@ export class GithubIssuesNotice {
   }
 
   private selectJobMatchTime(): any {
-    const channelColumn = 0
-    const timeColumn = 1
-    const mentionColumn = 2
-    const repoColumn = 3
-    const labelColumn = 4
+    const enabledColumn = 0
+    const channelColumn = 1
+    const timeColumn = 2
+    const mentionColumn = 3
+    const repoColumn = 4
+    const labelColumn = 5
 
     const nameField = 0
     const thresholdField = 1
@@ -233,6 +234,15 @@ export class GithubIssuesNotice {
     const nowM = `00${this.config.now.getMinutes()}`.slice(-timeLength)
 
     for (const task of this.data) {
+      const enabled = task[enabledColumn]
+      if (typeof enabled === 'boolean') {
+        if (!enabled) {
+          continue
+        }
+      } else {
+        console.error('"enabled" columns must be of type boolean')
+      }
+
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
