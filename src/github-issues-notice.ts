@@ -176,7 +176,6 @@ export class GithubIssuesNotice {
 
   private notify(task: ITask) {
     const attachments = []
-    const messages = []
     let mention = ` ${task.mentions.join(' ')} `
 
     for (const l of task.labels) {
@@ -184,23 +183,20 @@ export class GithubIssuesNotice {
         continue
       }
       const h = l.name.replace(/\-/g, ' ')
+      const m = l.issueTitles.length > l.threshold ? ` -- ${l.message}` : ''
       attachments.push({
-        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}s`,
+        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}s${m}`,
         color: l.color,
         text: l.issueTitles.join('\n')
       })
-      if (l.issueTitles.length > l.threshold) {
-        messages.push(l.message)
-      }
     }
 
-    if (messages.length === 0) {
-      if (attachments.length === 0) {
-        messages.push(this.config.slack.textEmpty)
-        mention = ''
-      } else {
-        messages.push(this.config.slack.textDefault)
-      }
+    const messages = []
+    if (attachments.length === 0) {
+      messages.push(this.config.slack.textEmpty)
+      mention = ''
+    } else {
+      messages.push(this.config.slack.textDefault)
     }
 
     for (const ch of task.channels) {
