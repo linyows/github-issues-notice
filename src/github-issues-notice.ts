@@ -38,6 +38,7 @@ interface ITask {
   mentions: string[]
   repos: string[]
   labels: ILabel[]
+  stats: boolean
 }
 
 interface ILabel {
@@ -221,6 +222,7 @@ export class GithubIssuesNotice {
     const mentionColumn = 3
     const repoColumn = 4
     const labelColumn = 5
+    const statsColumn = 6
 
     const nameField = 0
     const thresholdField = 1
@@ -248,6 +250,12 @@ export class GithubIssuesNotice {
         console.error(`"enabled" columns must be of type boolean: ${enabled}`)
       }
 
+      let stats = task[labelColumn]
+      if (typeof enabled !== 'boolean') {
+        console.error(`"stats" columns must be of type boolean: ${stats}`)
+        stats = false
+      }
+
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
@@ -269,7 +277,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels })
+          job.push({ channels, times, mentions, repos, labels, stats })
         }
       }
     }
