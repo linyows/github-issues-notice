@@ -144,7 +144,7 @@ export class GithubIssuesNotice {
       return
     }
 
-    const job = this.selectJobMatchTime()
+    const job = this.getJobByMatchedTime()
     for (const t of job) {
       this.doTask(t)
     }
@@ -214,7 +214,7 @@ export class GithubIssuesNotice {
     }
   }
 
-  private selectJobMatchTime(): any {
+  private getJobByMatchedTime(): ITask[] {
     const enabledColumn = 0
     const channelColumn = 1
     const timeColumn = 2
