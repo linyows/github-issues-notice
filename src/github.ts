@@ -34,4 +34,13 @@ export class Github {
 
     return JSON.parse(res.getContentText())
   }
+
+  public pulls(repo: string, labels: string) {
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/pulls?per_page=100&labels=${labels}`, {
+      method: 'get',
+      headers: this.headers
+    })
+
+    return JSON.parse(res.getContentText())
+  }
 }
