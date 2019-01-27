@@ -27,7 +27,7 @@ export class Github {
   }
 
   public issues(repo: string, labels: string) {
-    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues?labels=${labels}`, {
+    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues?per_page=100&labels=${labels}`, {
       method: 'get',
       headers: this.headers
     })
