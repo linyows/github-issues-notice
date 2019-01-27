@@ -147,6 +147,34 @@ export class GithubIssuesNotice {
     return arr
   }
 
+  private static buildStatsAttachment(task: ITask): object {
+      const p = task.stats.pulls
+      const i = task.stats.issues
+      const a = task.stats.proactive
+      const attachment = {
+        title: 'Stats',
+        color: '#000000',
+        text: '',
+        fields: [
+          { title: 'Repos', value: `${task.repos.length}`, short: false },
+          { title: 'Issues Total', value: `${i - p}`, short: true },
+          { title: 'Pulls Total', value: `${p}`, short: true }
+        ]
+      }
+
+      if (a > 0) {
+        const x = task.stats.coefficient
+        const hundred = 100
+        const halfHundred = 50
+        const r = hundred - Math.floor(a * x / (a * x + (i - a)) * hundred)
+        attachment.fields.push(
+          { title: 'Reactive Per', value: `${r} % :${r <= halfHundred ? 'palm_tree' : 'fire'}:`, short: false }
+        )
+      }
+
+      return attachment
+  }
+
   public doJob(): void {
     if (GithubIssuesNotice.IS_HOLIDAY(this.config.now)) {
       return
@@ -165,12 +193,12 @@ export class GithubIssuesNotice {
       }
 
       if (task.stats.coefficient > 0) {
-        const issues_all = this.github.issues(repo, '')
-        const pulls_all = this.github.pulls(repo, '')
-        const issues_proactive = this.github.issues(repo, 'proactive')
-        task.stats.issues = task.stats.issues + issues_all.length
-        task.stats.pulls = task.stats.pulls + pulls_all.length
-        task.stats.proactive = task.stats.proactive + issues_proactive.length
+        const i = this.github.issues(repo, '')
+        const p = this.github.pulls(repo, '')
+        const a = this.github.issues(repo, 'proactive')
+        task.stats.issues = task.stats.issues + i.length
+        task.stats.pulls = task.stats.pulls + p.length
+        task.stats.proactive = task.stats.proactive + a.length
       }
 
       for (const l of task.labels) {
@@ -192,39 +220,13 @@ export class GithubIssuesNotice {
     this.notify(task)
   }
 
-  private buildStatsAttachment(task: ITask): object {
-      const p = task.stats.pulls
-      const i = task.stats.issues
-      const a = task.stats.proactive
-      let attachment = {
-        title: 'Stats',
-        color: '#000000',
-        text: '',
-        fields: [
-          { title: 'Repos', value: `${task.repos.length}`, short: false },
-          { title: 'Issues Total', value: `${i-p}`, short: true },
-          { title: 'Pulls Total', value: `${p}`, short: true },
-        ]
-      }
-
-      if (a > 0) {
-        const x = task.stats.coefficient
-        const r = 100-Math.floor(a*x/(a*x+(i-a))*100)
-        attachment.fields.push(
-          { title: 'Reactive Per', value: `${r} % :${r <= 50 ? 'palm_tree' : 'fire'}:`, short: false }
-        )
-      }
-
-      return attachment
-  }
-
   private notify(task: ITask) {
     const attachments = []
     let mention = ` ${task.mentions.join(' ')} `
     let empty = true
 
     if (task.stats.coefficient > 0) {
-      attachments.push(this.buildStatsAttachment(task))
+      attachments.push(GithubIssuesNotice.buildStatsAttachment(task))
     }
 
     for (const l of task.labels) {
