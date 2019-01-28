@@ -25,7 +25,7 @@ Usage
 
     Enabled | Channel | Time           | Mention | Repository         | Label/Threshold/Message                                   | Stats
     ---     | ---     | ---            | ---     | ---                | ---                                                       | ---
-    [x]     | general | 10<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP/5/There are a lot of things in progress.              | 1
+    [x]     | general | 09<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP/5/There are a lot of things in progress.              | 1
     [x]     | dev     | 13<br>1750     | @sre    | foo/abc            | needs-review/3/@techlead Please need review.<br>WIP/5/Yo. | 2
     [ ]     | ...     | ...            | ...     | ...                | ...                                                       | 0
     - Sheet name is `config`
