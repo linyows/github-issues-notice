@@ -154,10 +154,12 @@ export class GithubIssuesNotice {
       const hundred = 100
       const halfHundred = 50
       const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
+      const t = 'Reactive Perは、自発的に取り組むIssueやPRに `proactive` ラベルをつけることで、タスクの割り込み度を可視化するものです。'
+              + 'この数値が低ければチームがタスクに集中できる環境があると言え、この数値はチームの健全性を示しています。'
       return {
         title: `Stats for ${task.repos.length} repositories`,
         color: '#000000',
-        text: '',
+        text: t,
         fields: [
           { title: 'Issues Total', value: `${i - p}`, short: true },
           { title: 'Pulls Total', value: `${p}`, short: true },
