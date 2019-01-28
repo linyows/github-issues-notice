@@ -300,12 +300,16 @@ export class GithubIssuesNotice {
         console.error(`"enabled" columns must be of type boolean: ${enabled}`)
       }
 
-      let stats = task[statsColumn]
-      if (typeof enabled === 'number') {
-        stats = { cofficient: stats }
-      } else {
-        console.error(`"stats" columns must be of type number: ${stats}`)
-        stats = { cofficient: 0 }
+      let s = task[statsColumn]
+      if (typeof s !== 'number') {
+        console.error(`"stats" columns must be of type number: ${s}`)
+        s = 1
+      }
+      const stats: IStats = {
+        issues: 0,
+        pulls: 0,
+        proactive: 0,
+        coefficient: s
       }
 
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
