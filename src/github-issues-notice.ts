@@ -144,7 +144,7 @@ export class GithubIssuesNotice {
       v = v.trim()
     }
 
-    return arr
+    return arr.filter(v => v)
   }
 
   private static buildStatsAttachment(task: ITask): object {
