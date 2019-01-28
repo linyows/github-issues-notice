@@ -152,11 +152,10 @@ export class GithubIssuesNotice {
       const i = task.stats.issues
       const a = task.stats.proactive
       const attachment = {
-        title: 'Stats',
+        title: `Stats for ${task.repos.length} repositories`,
         color: '#000000',
         text: '',
         fields: [
-          { title: 'Repos', value: `${task.repos.length}`, short: false },
           { title: 'Issues Total', value: `${i - p}`, short: true },
           { title: 'Pulls Total', value: `${p}`, short: true }
         ]
