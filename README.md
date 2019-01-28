@@ -43,6 +43,15 @@ Usage
     - Select type of time based trigger: `Minute timer`
     - Select hour interval: `Every minute`
 
+Stats
+--
+
+Stats reports issues total count, pull-requests total count and reactive percent.
+Reactive percent derives from `proactive` labeled issues and other issues count.
+If no proactive labels, no reports.
+By attaching `proactive` label to issues, it will be visible whether the work of
+the team is healthy. If the ratio is incorrect, give the correct coefficient.
+
 Contribution
 ------------
 
