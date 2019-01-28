@@ -155,15 +155,16 @@ export class GithubIssuesNotice {
       const halfHundred = 50
       const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
       const t = 'Reactive Perは、自発的に取り組むIssueやPRに `proactive` ラベルをつけることで、タスクの割り込み度を可視化するものです。'
-              + 'この数値が低ければチームがタスクに集中できる環境があると言え、この数値はチームの健全性を示しています。'
+              + 'この数値が低いほどチームがタスクに集中できる状態と言え、この数値はチームの健全性を示しています。'
+
       return {
         title: `Stats for ${task.repos.length} repositories`,
         color: '#000000',
         text: t,
         fields: [
+          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false },
           { title: 'Issues Total', value: `${i - p}`, short: true },
-          { title: 'Pulls Total', value: `${p}`, short: true },
-          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false }
+          { title: 'Pulls Total', value: `${p}`, short: true }
         ]
       }
   }
