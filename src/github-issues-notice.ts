@@ -42,10 +42,10 @@ interface ITask {
 }
 
 interface IStats {
+  enabled: boolean
   issues: number
   pulls: number
   proactive: number
-  coefficient: number
 }
 
 interface ILabel {
@@ -151,27 +151,19 @@ export class GithubIssuesNotice {
       const p = task.stats.pulls
       const i = task.stats.issues
       const a = task.stats.proactive
-      const attachment = {
+      const hundred = 100
+      const halfHundred = 50
+      const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
+      return {
         title: `Stats for ${task.repos.length} repositories`,
         color: '#000000',
         text: '',
         fields: [
           { title: 'Issues Total', value: `${i - p}`, short: true },
-          { title: 'Pulls Total', value: `${p}`, short: true }
+          { title: 'Pulls Total', value: `${p}`, short: true },
+          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false }
         ]
       }
-
-      if (a > 0) {
-        const x = task.stats.coefficient
-        const hundred = 100
-        const halfHundred = 50
-        const r = hundred - Math.floor(a * x / (a * x + (i - a)) * hundred)
-        attachment.fields.push(
-          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false }
-        )
-      }
-
-      return attachment
   }
 
   public doJob(): void {
@@ -191,7 +183,7 @@ export class GithubIssuesNotice {
         continue
       }
 
-      if (task.stats.coefficient > 0) {
+      if (task.stats.enabled) {
         const i = this.github.issues(repo, '')
         const p = this.github.pulls(repo, '')
         const a = this.github.issues(repo, 'proactive')
@@ -224,7 +216,7 @@ export class GithubIssuesNotice {
     let mention = ` ${task.mentions.join(' ')} `
     let empty = true
 
-    if (task.stats.coefficient > 0) {
+    if (task.stats.enabled) {
       attachments.push(GithubIssuesNotice.buildStatsAttachment(task))
     }
 
@@ -301,15 +293,15 @@ export class GithubIssuesNotice {
       }
 
       let s = task[statsColumn]
-      if (typeof s !== 'number') {
-        console.error(`"stats" columns must be of type number: ${s}`)
-        s = 1
+      if (typeof s !== 'boolean') {
+        console.error(`"stats" columns must be of type boolean: ${s}`)
+        s = false
       }
       const stats: IStats = {
+        enabled: s,
         issues: 0,
         pulls: 0,
-        proactive: 0,
-        coefficient: s
+        proactive: 0
       }
 
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
