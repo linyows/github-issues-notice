@@ -167,7 +167,7 @@ export class GithubIssuesNotice {
         const halfHundred = 50
         const r = hundred - Math.floor(a * x / (a * x + (i - a)) * hundred)
         attachment.fields.push(
-          { title: 'Reactive Per', value: `${r} % :${r <= halfHundred ? 'palm_tree' : 'fire'}:`, short: false }
+          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false }
         )
       }
 
