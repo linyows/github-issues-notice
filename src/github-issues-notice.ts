@@ -282,7 +282,7 @@ export class GithubIssuesNotice {
     const timeLength = 2
     const timeFullLength = 4
     const minStart = 2
-    const nowH = `${this.config.now.getHours()}`
+    const nowH = `0${this.config.now.getHours()}`.slice(-timeLength)
     const nowM = `00${this.config.now.getMinutes()}`.slice(-timeLength)
 
     for (const task of this.data) {
