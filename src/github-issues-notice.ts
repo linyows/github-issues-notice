@@ -163,8 +163,8 @@ export class GithubIssuesNotice {
         text: t,
         fields: [
           { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false },
-          { title: 'Issues Total', value: `${i - p}`, short: true },
-          { title: 'Pulls Total', value: `${p}`, short: true }
+          { title: 'Open Issues Total', value: `${i - p}`, short: true },
+          { title: 'Open Pulls Total', value: `${p}`, short: true }
         ]
       }
   }
