@@ -182,7 +182,10 @@ export class GithubIssuesNotice {
   }
 
   private tidyUpIssues(repo: string, idlePeriod: number) {
-    const period = new Date().getTime() - (idlePeriod * 3600 * 24 * 1000)
+    const oneD = 24
+    const oneH = 3600
+    const oneS = 1000
+    const period = new Date().getTime() - (idlePeriod * oneD * oneH * oneS)
     try {
       const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
       for (const i of issues) {
