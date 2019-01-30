@@ -39,6 +39,7 @@ interface ITask {
   repos: string[]
   labels: ILabel[]
   stats: IStats
+  idle: number
 }
 
 interface IStats {
@@ -180,16 +181,36 @@ export class GithubIssuesNotice {
     }
   }
 
+  private tidyUpIssues(repo: string, idlePeriod: number) {
+    const period = new Date().getTime() - (idlePeriod * 3600 * 24 * 1000)
+    try {
+      const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
+      for (const i of issues) {
+        if (Date.parse(i.updated_at) > period) {
+          return
+        }
+        this.github.closeIssue(repo, i.id)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   private doTask(task: ITask) {
     for (const repo of task.repos) {
       if (repo === '') {
         continue
       }
 
+      if (task.idle > 0) {
+        this.tidyUpIssues(repo, task.idle)
+      }
+
       if (task.stats.enabled) {
-        const i = this.github.issues(repo, '')
-        const p = this.github.pulls(repo, '')
-        const a = this.github.issues(repo, 'proactive')
+        const i = this.github.issues(repo)
+        const p = this.github.pulls(repo)
+        const labels = 'proactive'
+        const a = this.github.issues(repo, { labels })
         task.stats.issues = task.stats.issues + i.length
         task.stats.pulls = task.stats.pulls + p.length
         task.stats.proactive = task.stats.proactive + a.length
@@ -197,7 +218,8 @@ export class GithubIssuesNotice {
 
       for (const l of task.labels) {
         try {
-          const issues = this.github.issues(repo, l.name)
+          const labels = l.name
+          const issues = this.github.issues(repo, { labels })
           for (const i of issues) {
             for (const ll of i.labels) {
               if (l.name === ll.name) {
@@ -268,6 +290,7 @@ export class GithubIssuesNotice {
     const repoColumn = 4
     const labelColumn = 5
     const statsColumn = 6
+    const idleColumn = 7
 
     const nameField = 0
     const thresholdField = 1
@@ -307,6 +330,12 @@ export class GithubIssuesNotice {
         proactive: 0
       }
 
+      let idle = task[idleColumn]
+      if (typeof idle !== 'number') {
+        console.error(`"idle period" columns must be of type number: ${idle}`)
+        idle = 0
+      }
+
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
@@ -328,7 +357,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats })
+          job.push({ channels, times, mentions, repos, labels, stats, idle })
         }
       }
     }
