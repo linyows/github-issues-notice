@@ -23,11 +23,11 @@ Usage
     ```
 1. Create google spreadsheet. For example:
 
-    Enabled | Channel | Time           | Mention | Repository         | Label/Threshold/Message                                   | Stats
-    ---     | ---     | ---            | ---     | ---                | ---                                                       | ---
-    [x]     | general | 09<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP/5/There are a lot of things in progress.              | [x]
-    [x]     | dev     | 13<br>1750     | @sre    | foo/abc            | needs-review/3/@techlead Please need review.<br>WIP/5/Yo. | [x]
-    [ ]     | ...     | ...            | ...     | ...                | ...                                                       | [ ]
+    Enabled | Channel | Time           | Mention | Repository         | Label/Threshold/Message                                   | Stats | Idle Period
+    ---     | ---     | ---            | ---     | ---                | ---                                                       | ---   | ---
+    [x]     | general | 09<br>13<br>17 | @dev    | foo/bar<br>foo/baz | WIP/5/There are a lot of things in progress.              | [x]   | 60
+    [x]     | dev     | 13<br>1750     | @sre    | foo/abc            | needs-review/3/@techlead Please need review.<br>WIP/5/Yo. | [x]   |
+    [ ]     | ...     | ...            | ...     | ...                | ...                                                       | [ ]   |
     - Sheet name is `config`
     - Config start 2nd row, 1st row is subject
 1. Set script properties as ENV(File > Project properties > Script properties)
@@ -50,6 +50,13 @@ Reactive percent derives from `proactive` labeled issues and other issues count.
 If no proactive labels, no reports.
 By attaching `proactive` label to issues, it will be visible whether the work of
 the team is healthy.
+
+Idle Period
+--
+
+If there is a number of days in the Idle period, it will be automatically closed
+if there are no issues or pulls that have not been updated over that number of days.
+If you do not want to use this function, please set it to blank or 0.
 
 Contribution
 ------------
