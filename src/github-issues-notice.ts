@@ -187,7 +187,7 @@ export class GithubIssuesNotice {
     const oneS = 1000
     const now = new Date()
     const period = now.getTime() - (idlePeriod * oneD * oneH * oneS)
-    console.log(now.toISOString())
+
     try {
       const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
       for (const i of issues) {

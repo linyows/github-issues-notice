@@ -67,7 +67,7 @@ export class Github {
       payload: JSON.stringify({ state: 'closed' })
     })
 
-    return JSON.parse(res.getContentText())
+    return res.getContentText()
   }
 
   public pulls(repo: string, opts?: IIssueOptions) {
