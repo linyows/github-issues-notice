@@ -64,7 +64,7 @@ export class Github {
     const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues/${num}`, {
       method: 'patch',
       headers: this.headers,
-      payload: { state: 'closed' }
+      payload: JSON.stringify({ state: 'closed' })
     })
 
     return JSON.parse(res.getContentText())
