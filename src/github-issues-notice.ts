@@ -185,14 +185,16 @@ export class GithubIssuesNotice {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
-    const period = new Date().getTime() - (idlePeriod * oneD * oneH * oneS)
+    const now = new Date()
+    const period = now.getTime() - (idlePeriod * oneD * oneH * oneS)
+    console.log(now.toISOString())
     try {
       const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
       for (const i of issues) {
         if (Date.parse(i.updated_at) > period) {
-          return
+          continue
         }
-        this.github.closeIssue(repo, i.id)
+        this.github.closeIssue(repo, i.number)
       }
     } catch (e) {
       console.error(e)
@@ -321,9 +323,13 @@ export class GithubIssuesNotice {
         console.error(`"enabled" columns must be of type boolean: ${enabled}`)
       }
 
+      const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
+      const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
+      const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
+      const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
+
       let s = task[statsColumn]
       if (typeof s !== 'boolean') {
-        console.error(`"stats" columns must be of type boolean: ${s}`)
         s = false
       }
       const stats: IStats = {
@@ -335,14 +341,9 @@ export class GithubIssuesNotice {
 
       let idle = task[idleColumn]
       if (typeof idle !== 'number') {
-        console.error(`"idle period" columns must be of type number: ${idle}`)
         idle = 0
       }
 
-      const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
-      const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
-      const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
-      const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
 
       for (const time of times) {
         const hour = time.substr(0, timeLength)
