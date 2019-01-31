@@ -344,7 +344,6 @@ export class GithubIssuesNotice {
         idle = 0
       }
 
-
       for (const time of times) {
         const hour = time.substr(0, timeLength)
         const min = time.length === timeFullLength ? time.substr(minStart, timeLength) : '00'

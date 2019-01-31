@@ -18,7 +18,16 @@ export class Github {
   private token: string
   private apiEndpoint: string
 
-  private buildOptionUrl(opts: IIssueOptions): string {
+  constructor(token: string, apiEndpoint?: string) {
+    this.token = token
+    if (apiEndpoint) {
+      this.apiEndpoint = apiEndpoint
+    } else {
+      this.apiEndpoint = 'https://api.github.com/'
+    }
+  }
+
+  private static buildOptionUrl(opts: IIssueOptions): string {
     let u = ''
 
     if (opts.labels) {
@@ -34,15 +43,6 @@ export class Github {
     return u
   }
 
-  constructor(token: string, apiEndpoint?: string) {
-    this.token = token
-    if (apiEndpoint) {
-      this.apiEndpoint = apiEndpoint
-    } else {
-      this.apiEndpoint = 'https://api.github.com/'
-    }
-  }
-
   public get headers(): any {
     return {
       Authorization: `token ${this.token}`
@@ -51,7 +51,7 @@ export class Github {
 
   public issues(repo: string, opts?: IIssueOptions) {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/issues?per_page=100`
-    const optionUrl = opts ? this.buildOptionUrl(opts) : ''
+    const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
       method: 'get',
       headers: this.headers
@@ -72,7 +72,7 @@ export class Github {
 
   public pulls(repo: string, opts?: IIssueOptions) {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/pulls?per_page=100`
-    const optionUrl = opts ? this.buildOptionUrl(opts) : ''
+    const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
       method: 'get',
       headers: this.headers
