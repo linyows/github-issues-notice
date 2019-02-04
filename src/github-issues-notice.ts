@@ -39,7 +39,12 @@ interface ITask {
   repos: string[]
   labels: ILabel[]
   stats: IStats
-  idle: number
+  idle: IIdle
+}
+
+interface IIdle {
+  period: number
+  issueTitles: string[]
 }
 
 interface IStats {
@@ -161,8 +166,10 @@ export class GithubIssuesNotice {
         title: `Stats for ${task.repos.length} repositories`,
         color: '#000000',
         text: '',
+        footer: `Stats | <${url}|What is this?>`,
+        footer_icon: 'https://octodex.github.com/images/surftocat.png',
         fields: [
-          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} % -- <${url}|What?>`, short: false },
+          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false },
           { title: 'Open Issues Total', value: `${i - p}`, short: true },
           { title: 'Open Pulls Total', value: `${p}`, short: true }
         ]
@@ -180,12 +187,12 @@ export class GithubIssuesNotice {
     }
   }
 
-  private tidyUpIssues(repo: string, idlePeriod: number) {
+  private tidyUpIssues(repo: string, idle: IIdle) {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
     const now = new Date()
-    const period = now.getTime() - (idlePeriod * oneD * oneH * oneS)
+    const period = now.getTime() - (idle.period * oneD * oneH * oneS)
 
     try {
       const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
@@ -194,6 +201,7 @@ export class GithubIssuesNotice {
           continue
         }
         this.github.closeIssue(repo, i.number)
+        idle.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
       }
     } catch (e) {
       console.error(e)
@@ -206,7 +214,7 @@ export class GithubIssuesNotice {
         continue
       }
 
-      if (task.idle > 0) {
+      if (task.idle.period > 0) {
         this.tidyUpIssues(repo, task.idle)
       }
 
@@ -260,6 +268,17 @@ export class GithubIssuesNotice {
         title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}s${m}`,
         color: l.color,
         text: l.issueTitles.join('\n')
+      })
+    }
+
+    if (task.idle.issueTitles.length > 0) {
+      const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/idle-period.md'
+      attachments.push({
+        title: `Closed with no change over ${task.idle.period}days`,
+        color: '#CCCCCC',
+        text: task.idle.issueTitles.join('\n'),
+        footer: `Idle Period | <${url}|What is this?>`,
+        footer_icon: 'https://octodex.github.com/images/Sentrytocat_octodex.jpg'
       })
     }
 
@@ -338,9 +357,13 @@ export class GithubIssuesNotice {
         proactive: 0
       }
 
-      let idle = task[idleColumn]
-      if (typeof idle !== 'number') {
-        idle = 0
+      let idlePeriod = task[idleColumn]
+      if (typeof idlePeriod !== 'number') {
+        idlePeriod = 0
+      }
+      const idle: IIdle = {
+        period: idlePeriod,
+        issueTitles: []
       }
 
       for (const time of times) {
