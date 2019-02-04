@@ -1,4 +1,4 @@
-WHat is Reactive Per?
+What is Reactive Per?
 ==
 
 Reactive percent derives from proactive labeled issues and other issues count.
