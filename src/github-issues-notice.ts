@@ -301,7 +301,10 @@ export class GithubIssuesNotice {
         color: '#CCCCCC',
         text: task.idle.issueTitles.join('\n'),
         footer: `Idle Period | <${url}|What is this?>`,
-        footer_icon: 'https://octodex.github.com/images/Sentrytocat_octodex.jpg'
+        footer_icon: 'https://octodex.github.com/images/Sentrytocat_octodex.jpg',
+        fields: [
+          { title: 'Closed Total', value: `${task.idle.issueTitles.length}`, short: true }
+        ]
       })
     }
 
