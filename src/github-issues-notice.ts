@@ -153,14 +153,37 @@ export class GithubIssuesNotice {
     return arr.filter((v) => v)
   }
 
+  private static statsEmoji(r: number): string {
+      const start = 100
+      const danger = 90
+      const caution = 80
+      const ng = 70
+      const warn = 60
+      const ok = 50
+      const good = 40
+      const great = 30
+
+      switch (true) {
+        case r === start: return ':checkered_flag:'
+        case r > danger: return ':skull:'
+        case r > caution: return ':fire:'
+        case r > ng: return ':jack_o_lantern:'
+        case r > warn: return ':space_invader:'
+        case r > ok: return ':surfer:'
+        case r > good: return ':palm_tree:'
+        case r > great: return ':helicopter:'
+        default: return ':rocket:'
+      }
+  }
+
   private static buildStatsAttachment(task: ITask): object {
       const p = task.stats.pulls
       const i = task.stats.issues
       const a = task.stats.proactive
       const hundred = 100
-      const halfHundred = 50
       const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
       const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/reactive-per.md'
+      const info = r === hundred ? ' Please applying `proactive` labels to voluntary issues' : ''
 
       return {
         title: `Stats for ${task.repos.length} repositories`,
@@ -169,7 +192,7 @@ export class GithubIssuesNotice {
         footer: `Stats | <${url}|What is this?>`,
         footer_icon: 'https://octodex.github.com/images/surftocat.png',
         fields: [
-          { title: 'Reactive Per', value: `:${r <= halfHundred ? 'palm_tree' : 'fire'}: ${r} %`, short: false },
+          { title: 'Reactive Per', value: `${GithubIssuesNotice.statsEmoji(r)} ${r}%${info}`, short: false },
           { title: 'Open Issues Total', value: `${i - p}`, short: true },
           { title: 'Open Pulls Total', value: `${p}`, short: true }
         ]
