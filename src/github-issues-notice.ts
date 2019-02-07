@@ -183,7 +183,8 @@ export class GithubIssuesNotice {
       const hundred = 100
       const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
       const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/reactive-per.md'
-      const info = r === hundred ? ' Please applying `proactive` labels to voluntary issues' : ''
+      const m = 'Please applying `proactive` labels to voluntary issues'
+      const info = `${GithubIssuesNotice.statsEmoji(r)} ${r === hundred ? m : `${r}%`}`
 
       return {
         title: `Stats for ${task.repos.length} repositories`,
@@ -192,7 +193,7 @@ export class GithubIssuesNotice {
         footer: `Stats | <${url}|What is this?>`,
         footer_icon: 'https://octodex.github.com/images/surftocat.png',
         fields: [
-          { title: 'Reactive Per', value: `${GithubIssuesNotice.statsEmoji(r)} ${r}%${info}`, short: false },
+          { title: 'Reactive Per', value: `${info}`, short: false },
           { title: 'Open Issues Total', value: `${i - p}`, short: true },
           { title: 'Open Pulls Total', value: `${p}`, short: true }
         ]
