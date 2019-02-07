@@ -273,7 +273,7 @@ export class GithubIssuesNotice {
   }
 
   private notify(task: ITask) {
-    const attachments = []
+    let attachments = []
     let mention = ` ${task.mentions.join(' ')} `
     let empty = true
 
@@ -297,6 +297,7 @@ export class GithubIssuesNotice {
 
     if (task.idle.issueTitles.length > 0) {
       const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/idle-period.md'
+      empty = false
       attachments.push({
         title: `Closed with no change over ${task.idle.period}days`,
         color: '#CCCCCC',
@@ -315,6 +316,7 @@ export class GithubIssuesNotice {
       mention = ''
     } else {
       messages.push(this.config.slack.textDefault)
+      attachments = []
     }
 
     for (const ch of task.channels) {
