@@ -289,7 +289,7 @@ export class GithubIssuesNotice {
       const m = l.issueTitles.length > l.threshold ? ` -- ${l.message}` : ''
       empty = false
       attachments.push({
-        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}s${m}`,
+        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}${m}`,
         color: l.color,
         text: l.issueTitles.join('\n')
       })
