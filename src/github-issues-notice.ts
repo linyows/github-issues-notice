@@ -313,10 +313,10 @@ export class GithubIssuesNotice {
     const messages = []
     if (empty) {
       messages.push(this.config.slack.textEmpty)
+      attachments = []
       mention = ''
     } else {
       messages.push(this.config.slack.textDefault)
-      attachments = []
     }
 
     for (const ch of task.channels) {
