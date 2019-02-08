@@ -154,7 +154,6 @@ export class GithubIssuesNotice {
   }
 
   private static statsEmoji(r: number): string {
-      const start = 100
       const danger = 90
       const caution = 80
       const ng = 70
@@ -164,7 +163,6 @@ export class GithubIssuesNotice {
       const great = 30
 
       switch (true) {
-        case r === start: return ':checkered_flag:'
         case r > danger: return ':skull:'
         case r > caution: return ':fire:'
         case r > ng: return ':jack_o_lantern:'
@@ -183,8 +181,8 @@ export class GithubIssuesNotice {
       const hundred = 100
       const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
       const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/reactive-per.md'
-      const m = 'Please applying `proactive` labels to voluntary issues'
-      const info = `${GithubIssuesNotice.statsEmoji(r)} ${r === hundred ? m : `${r}%`}`
+      const m = '--% :point_right: Please applying `proactive` label to voluntary issues'
+      const info = r === hundred ? m : `${GithubIssuesNotice.statsEmoji(r)} ${r}%`
 
       return {
         title: `Stats for ${task.repos.length} repositories`,
