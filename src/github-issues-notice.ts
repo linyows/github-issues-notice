@@ -270,6 +270,29 @@ export class GithubIssuesNotice {
     this.notify(task)
   }
 
+  private getTsIfDuplicated(ch: string): string {
+    const lastMsg = this.slack.channels.history(ch, { count: 1 })
+    return (lastMsg.username === this.config.slack.username &&
+      lastMsg.text.indexOf(this.config.slack.textEmpty) !== -1) ? lastMsg.ts : ''
+  }
+
+  private postMessageOrUpdate(ch: string) {
+    const ts = this.getTsIfDuplicated(ch)
+    if (ts === '') {
+      this.slack.postMessage(ch, {
+        username: this.config.slack.username,
+        icon_emoji: ':octocat:',
+        link_names: 1,
+        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}`
+      })
+    } else {
+      this.slack.chatUpdate(ch, {
+        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix} (latest: ${this.config.now})`,
+        ts: ts
+      })
+    }
+  }
+
   private notify(task: Task) {
     let attachments = []
     let mention = ` ${task.mentions.join(' ')} `
