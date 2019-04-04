@@ -4,7 +4,7 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-interface IIssueOptions {
+interface IssueOptions {
   labels?: string
   since?: string
   sort?: string
@@ -27,7 +27,7 @@ export class Github {
     }
   }
 
-  private static buildOptionUrl(opts: IIssueOptions): string {
+  private static buildOptionUrl(opts: IssueOptions): string {
     let u = ''
 
     if (opts.labels) {
@@ -49,7 +49,7 @@ export class Github {
     }
   }
 
-  public issues(repo: string, opts?: IIssueOptions) {
+  public issues(repo: string, opts?: IssueOptions) {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/issues?per_page=100`
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
@@ -70,7 +70,7 @@ export class Github {
     return res.getContentText()
   }
 
-  public pulls(repo: string, opts?: IIssueOptions) {
+  public pulls(repo: string, opts?: IssueOptions) {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/pulls?per_page=100`
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {

@@ -7,12 +7,12 @@
 import {Github} from './github'
 import {Slack} from './slack'
 
-interface IGithubConfig {
+interface GithubConfig {
   token: string
   apiEndpoint?: string
 }
 
-interface ISlackConfig {
+interface SlackConfig {
   token: string
   username: string
   textSuffix: string
@@ -20,41 +20,41 @@ interface ISlackConfig {
   textDefault: string
 }
 
-interface ISpreadsheetsConfig {
+interface SpreadsheetsConfig {
   id: string
   url: string
 }
 
-interface IConfig {
+interface Config {
   now: Date
-  slack: ISlackConfig
-  github: IGithubConfig
-  spreadsheets: ISpreadsheetsConfig
+  slack: SlackConfig
+  github: GithubConfig
+  spreadsheets: SpreadsheetsConfig
 }
 
-interface ITask {
+interface Task {
   channels: string[]
   times: string[]
   mentions: string[]
   repos: string[]
-  labels: ILabel[]
-  stats: IStats
-  idle: IIdle
+  labels: Label[]
+  stats: Stats
+  idle: Idle
 }
 
-interface IIdle {
+interface Idle {
   period: number
   issueTitles: string[]
 }
 
-interface IStats {
+interface Stats {
   enabled: boolean
   issues: number
   pulls: number
   proactive: number
 }
 
-interface ILabel {
+interface Label {
   name: string
   threshold: number
   message: string
@@ -108,13 +108,13 @@ export class GithubIssuesNotice {
     return this.pData
   }
 
-  public config: IConfig
+  public config: Config
   private pSheet: any
   private pSlack: any
   private pGithub: any
   private pData: any
 
-  constructor(c: IConfig) {
+  constructor(c: Config) {
     this.config = c
   }
 
@@ -174,7 +174,7 @@ export class GithubIssuesNotice {
       }
   }
 
-  private static buildStatsAttachment(task: ITask): object {
+  private static buildStatsAttachment(task: Task): object {
       const p = task.stats.pulls
       const i = task.stats.issues
       const a = task.stats.proactive
@@ -209,7 +209,7 @@ export class GithubIssuesNotice {
     }
   }
 
-  private tidyUpIssues(repo: string, idle: IIdle) {
+  private tidyUpIssues(repo: string, idle: Idle) {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
@@ -230,7 +230,7 @@ export class GithubIssuesNotice {
     }
   }
 
-  private doTask(task: ITask) {
+  private doTask(task: Task) {
     for (const repo of task.repos) {
       if (repo === '') {
         continue
@@ -270,7 +270,7 @@ export class GithubIssuesNotice {
     this.notify(task)
   }
 
-  private notify(task: ITask) {
+  private notify(task: Task) {
     let attachments = []
     let mention = ` ${task.mentions.join(' ')} `
     let empty = true
@@ -332,7 +332,7 @@ export class GithubIssuesNotice {
     }
   }
 
-  private getJobByMatchedTime(): ITask[] {
+  private getJobByMatchedTime(): Task[] {
     const enabledColumn = 0
     const channelColumn = 1
     const timeColumn = 2
@@ -346,7 +346,7 @@ export class GithubIssuesNotice {
     const thresholdField = 1
     const messageField = 2
 
-    const job: ITask[] = []
+    const job: Task[] = []
     const timeLength = 2
     const timeFullLength = 4
     const minStart = 2
@@ -377,7 +377,7 @@ export class GithubIssuesNotice {
       if (typeof s !== 'boolean') {
         s = false
       }
-      const stats: IStats = {
+      const stats: Stats = {
         enabled: s,
         issues: 0,
         pulls: 0,
@@ -388,7 +388,7 @@ export class GithubIssuesNotice {
       if (typeof idlePeriod !== 'number') {
         idlePeriod = 0
       }
-      const idle: IIdle = {
+      const idle: Idle = {
         period: idlePeriod,
         issueTitles: []
       }
@@ -398,7 +398,7 @@ export class GithubIssuesNotice {
         const min = time.length === timeFullLength ? time.substr(minStart, timeLength) : '00'
 
         if (hour === nowH && min === nowM) {
-          const labels: ILabel[] = []
+          const labels: Label[] = []
           for (const l of labelsWithInfo) {
             const arr = `${l}`.split('/')
             labels.push({

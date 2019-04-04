@@ -4,20 +4,20 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-interface ISlackField {
+interface SlackField {
   title: string
   value: string
 }
 
-interface ISlackAttachment {
+interface SlackAttachment {
   title: string
   title_link: string
   color: string
   text: string
-  fields?: ISlackField[]
+  fields?: SlackField[]
 }
 
-interface ISlackPostMessageOpts {
+interface SlackPostMessageOpts {
   username: string
   icon_emoji: string
   link_names: number
@@ -47,7 +47,7 @@ export class Slack {
     return JSON.parse(res.getContentText()).ok
   }
 
-  public postMessage(channel: string, opts: ISlackPostMessageOpts) {
+  public postMessage(channel: string, opts: SlackPostMessageOpts) {
     this.joinChannel(channel)
 
     const res = UrlFetchApp.fetch('https://slack.com/api/chat.postMessage', {
