@@ -332,23 +332,24 @@ export class GithubIssuesNotice {
     }
 
     const messages = []
-    if (empty) {
-      messages.push(this.config.slack.textEmpty)
-      attachments = []
-      mention = ''
-    } else {
+    if (!empty) {
       messages.push(this.config.slack.textDefault)
     }
 
     for (const ch of task.channels) {
       try {
-        this.slack.postMessage(ch, {
-          username: this.config.slack.username,
-          icon_emoji: ':octocat:',
-          link_names: 1,
-          text: `${mention}${messages.join(' ')}${this.config.slack.textSuffix}`,
-          attachments: JSON.stringify(attachments)
-        })
+        if (empty) {
+          this.postMessageOrUpdate(ch)
+        } else {
+          this.slack.postMessage(ch, {
+            username: this.config.slack.username,
+            icon_emoji: ':octocat:',
+            link_names: 1,
+            text: `${mention}${messages.join(' ')}${this.config.slack.textSuffix}`,
+            attachments: JSON.stringify(attachments)
+          })
+        }
+
       } catch (e) {
         console.error(e)
       }
