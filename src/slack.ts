@@ -43,6 +43,12 @@ interface SlackChatUpdateOpts {
   parse?: string
 }
 
+interface SlackChannel {
+  id: string
+  name: string
+  members: string[]
+}
+
 /**
  * Slack Client
  */
@@ -53,7 +59,7 @@ export class Slack {
     this.token = token
   }
 
-  public joinChannel(channel: string): boolean {
+  public joinChannel(channel: string): SlackChannel {
     const res = UrlFetchApp.fetch('https://slack.com/api/channels.join', {
       method: 'post',
       payload: {
@@ -62,7 +68,7 @@ export class Slack {
       }
     })
 
-    return JSON.parse(res.getContentText()).ok
+    return JSON.parse(res.getContentText()).channel
   }
 
   public postMessage(channel: string, opts: SlackPostMessageOpts) {
@@ -77,22 +83,22 @@ export class Slack {
   }
 
   public channelsHistory(channel: string, opts: SlackChannelsHistoryOpts) {
-    this.joinChannel(channel)
+    const ch = this.joinChannel(channel)
 
     const res = UrlFetchApp.fetch('https://slack.com/api/channels.history', {
       method: 'post',
-      payload: { ...{ token: this.token, channel: channel }, ...opts }
+      payload: { ...{ token: this.token, channel: ch.id }, ...opts }
     })
 
     return JSON.parse(res.getContentText()).messages
   }
 
   public chatUpdate(channel: string, opts: SlackChatUpdateOpts) {
-    this.joinChannel(channel)
+    const ch = this.joinChannel(channel)
 
     const res = UrlFetchApp.fetch('https://slack.com/api/chat.update', {
       method: 'post',
-      payload: { ...{ token: this.token, channel: channel }, ...opts }
+      payload: { ...{ token: this.token, channel: ch.id }, ...opts }
     })
 
     return JSON.parse(res.getContentText()).ok

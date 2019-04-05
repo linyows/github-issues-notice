@@ -271,9 +271,10 @@ export class GithubIssuesNotice {
   }
 
   private getTsIfDuplicated(ch: string): string {
-    const lastMsg = this.slack.channels.history(ch, { count: 1 })
-    return (lastMsg.username === this.config.slack.username &&
-      lastMsg.text.indexOf(this.config.slack.textEmpty) !== -1) ? lastMsg.ts : ''
+    const msgs = this.slack.channelsHistory(ch, { count: 1 })
+    const msg = msgs[0]
+    return (msg.username === this.config.slack.username &&
+      msg.text.indexOf(this.config.slack.textEmpty) !== -1) ? msg.ts : ''
   }
 
   private postMessageOrUpdate(ch: string) {
@@ -286,8 +287,9 @@ export class GithubIssuesNotice {
         text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}`
       })
     } else {
+      const updatedAt = ` -- :hourglass: last updated at: ${this.config.now}`
       this.slack.chatUpdate(ch, {
-        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix} (latest: ${this.config.now})`,
+        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}${updatedAt}`,
         ts: ts
       })
     }
