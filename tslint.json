@@ -6,6 +6,7 @@
   ],
   "jsRules": {},
   "rules": {
+    "interface-name": [true, "never-prefix"],
     "no-console": [false],
     "no-import-side-effect": [true, {"ignore-module": "reflect-metadata"}],
     "quotemark": [true, "single"],

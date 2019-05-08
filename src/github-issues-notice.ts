@@ -273,6 +273,7 @@ export class GithubIssuesNotice {
   private getTsIfDuplicated(ch: string): string {
     const msgs = this.slack.channelsHistory(ch, { count: 1 })
     const msg = msgs[0]
+
     return (msg.username === this.config.slack.username &&
       msg.text.indexOf(this.config.slack.textEmpty) !== -1) ? msg.ts : ''
   }
@@ -296,8 +297,8 @@ export class GithubIssuesNotice {
   }
 
   private notify(task: Task) {
-    let attachments = []
-    let mention = ` ${task.mentions.join(' ')} `
+    const attachments = []
+    const mention = ` ${task.mentions.join(' ')} `
     let empty = true
 
     if (task.stats.enabled) {
