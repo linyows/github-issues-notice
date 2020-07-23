@@ -41,6 +41,7 @@ interface Task {
   stats: Stats
   idle: Idle
   relations: boolean
+  onlyPulls: boolean
 }
 
 interface Idle {
@@ -254,18 +255,20 @@ export class GithubIssuesNotice {
       for (const l of task.labels) {
         try {
           const labels = l.name
-          // Issues without Pull Request
-          const issues = this.github.issues(repo, { labels })
-          for (const i of issues) {
-            if (Github.IsPullRequestIssue(i)) {
-              continue
-            }
-            for (const ll of i.labels) {
-              if (l.name === ll.name) {
-                l.color = ll.color
+          if (!task.onlyPulls) {
+            // Issues without Pull Request
+            const issues = this.github.issues(repo, { labels })
+            for (const i of issues) {
+              if (Github.IsPullRequestIssue(i)) {
+                continue
               }
+              for (const ll of i.labels) {
+                if (l.name === ll.name) {
+                  l.color = ll.color
+                }
+              }
+              l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildIssueRelations(i) : ''}`)
             }
-            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildIssueRelations(i) : ''}`)
           }
           // Pull Requests without Draft
           const pulls = this.github.pullsWithoutDraft(repo, { labels })
@@ -405,6 +408,7 @@ export class GithubIssuesNotice {
     const statsColumn = 6
     const idleColumn = 7
     const relationsColumn = 8
+    const onlyPullsColumn = 9
 
     const nameField = 0
     const thresholdField = 1
@@ -440,6 +444,10 @@ export class GithubIssuesNotice {
       let relations = task[relationsColumn]
       if (typeof relations !== 'boolean') {
         relations = false
+      }
+      let onlyPulls = task[onlyPullsColumn]
+      if (typeof onlyPulls !== 'boolean') {
+        onlyPulls = false
       }
 
       let s = task[statsColumn]
@@ -478,7 +486,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats, idle, relations })
+          job.push({ channels, times, mentions, repos, labels, stats, idle, relations, onlyPulls })
         }
       }
     }
