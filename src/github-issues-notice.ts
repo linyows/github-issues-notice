@@ -42,6 +42,7 @@ interface Task {
   idle: Idle
   relations: boolean
   onlyPulls: boolean
+  labelProtection: boolean
 }
 
 interface Idle {
@@ -257,7 +258,8 @@ export class GithubIssuesNotice {
           const labels = l.name
           if (!task.onlyPulls) {
             // Issues without Pull Request
-            const issues = this.github.issues(repo, { labels })
+            const state = task.labelProtection ? 'all' : 'open'
+            const issues = this.github.issues(repo, { labels, state })
             for (const i of issues) {
               if (Github.IsPullRequestIssue(i)) {
                 continue
@@ -267,7 +269,8 @@ export class GithubIssuesNotice {
                   l.color = ll.color
                 }
               }
-              l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildIssueRelations(i) : ''}`)
+              const warn = task.labelProtection && i.state === 'closed' ? ':warning: Closed: ' : ''
+              l.issueTitles.push(`${warn}<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildIssueRelations(i) : ''}`)
             }
           }
           // Pull Requests without Draft
@@ -409,6 +412,7 @@ export class GithubIssuesNotice {
     const idleColumn = 7
     const relationsColumn = 8
     const onlyPullsColumn = 9
+    const labelProtectionColumn = 10
 
     const nameField = 0
     const thresholdField = 1
@@ -449,6 +453,10 @@ export class GithubIssuesNotice {
       if (typeof onlyPulls !== 'boolean') {
         onlyPulls = false
       }
+      let labelProtection = task[labelProtectionColumn]
+      if (typeof labelProtection !== 'boolean') {
+        labelProtection = false
+      }
 
       let s = task[statsColumn]
       if (typeof s !== 'boolean') {
@@ -486,7 +494,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats, idle, relations, onlyPulls })
+          job.push({ channels, times, mentions, repos, labels, stats, idle, relations, onlyPulls, labelProtection })
         }
       }
     }
