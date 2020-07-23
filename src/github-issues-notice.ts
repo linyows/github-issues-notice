@@ -4,7 +4,7 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-import {Github, Issue} from './github'
+import {Github, Issue, PullRequest} from './github'
 import {Slack} from './slack'
 
 interface GithubConfig {
@@ -40,7 +40,7 @@ interface Task {
   labels: Label[]
   stats: Stats
   idle: Idle
-  assignees: boolean
+  relations: boolean
 }
 
 interface Idle {
@@ -254,14 +254,28 @@ export class GithubIssuesNotice {
       for (const l of task.labels) {
         try {
           const labels = l.name
+          // Issues without Pull Request
           const issues = this.github.issues(repo, { labels })
           for (const i of issues) {
+            if (Github.IsPullRequestIssue(i)) {
+              continue
+            }
             for (const ll of i.labels) {
               if (l.name === ll.name) {
                 l.color = ll.color
               }
             }
-            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.assignees ? this.buildAssignees(i) : ''}`)
+            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildIssueRelations(i) : ''}`)
+          }
+          // Pull Requests without Draft
+          const pulls = this.github.pullsWithoutDraft(repo, { labels })
+          for (const i of pulls) {
+            for (const ll of i.labels) {
+              if (l.name === ll.name) {
+                l.color = ll.color
+              }
+            }
+            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.relations ? this.buildPullRelations(i) : ''}`)
           }
         } catch (e) {
           console.error(e)
@@ -271,12 +285,25 @@ export class GithubIssuesNotice {
     this.notify(task)
   }
 
-  private buildAssignees(i: Issue): string {
+  private buildIssueRelations(i: Issue): string {
     if (i.assignees.length == 0) {
       return ''
     }
-    const users = i.assignees.map((u) => { return u.login })
-    return ` (assignee: ${users.join(', ')})`
+    return ` (Assignees: ${i.assignees.map(u => { return u.login }).join(', ')})`
+  }
+
+  private buildPullRelations(i: PullRequest): string {
+    if (i.assignees.length == 0 && i.requested_reviewers.length == 0) {
+      return ''
+    }
+    const r = []
+    if (i.assignees.length > 0) {
+      r.push('Assignees: ' + i.assignees.map(u => { return u.login }).join(', '))
+    }
+    if (i.requested_reviewers.length > 0) {
+      r.push('Reviewers: ' + i.requested_reviewers.map(u => { return u.login }).join(', '))
+    }
+    return ` (${r.join(', ')})`
   }
 
   private getTsIfDuplicated(ch: string): string {
@@ -377,7 +404,7 @@ export class GithubIssuesNotice {
     const labelColumn = 5
     const statsColumn = 6
     const idleColumn = 7
-    const assigneesColumn = 8
+    const relationsColumn = 8
 
     const nameField = 0
     const thresholdField = 1
@@ -410,9 +437,9 @@ export class GithubIssuesNotice {
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
       const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
 
-      let showAssignees = task[assigneesColumn]
-      if (typeof showAssignees !== 'boolean') {
-        showAssignees = false
+      let relations = task[relationsColumn]
+      if (typeof relations !== 'boolean') {
+        relations = false
       }
 
       let s = task[statsColumn]
@@ -451,7 +478,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats, idle, assignees })
+          job.push({ channels, times, mentions, repos, labels, stats, idle, relations })
         }
       }
     }
