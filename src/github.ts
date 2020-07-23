@@ -27,6 +27,10 @@ export class Github {
     }
   }
 
+  public static IsPullRequestIssue(i: Issue): boolean {
+    return i.pull_request !== undefined
+  }
+
   private static buildOptionUrl(opts: IssueOptions): string {
     let u = ''
 
