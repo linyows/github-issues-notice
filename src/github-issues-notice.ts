@@ -4,7 +4,7 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-import {Github} from './github'
+import {Github, Issue} from './github'
 import {Slack} from './slack'
 
 interface GithubConfig {
@@ -40,6 +40,7 @@ interface Task {
   labels: Label[]
   stats: Stats
   idle: Idle
+  assignees: boolean
 }
 
 interface Idle {
@@ -260,7 +261,7 @@ export class GithubIssuesNotice {
                 l.color = ll.color
               }
             }
-            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
+            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${task.assignees ? this.buildAssignees(i) : ''}`)
           }
         } catch (e) {
           console.error(e)
@@ -268,6 +269,14 @@ export class GithubIssuesNotice {
       }
     }
     this.notify(task)
+  }
+
+  private buildAssignees(i: Issue): string {
+    if (i.assignees.length == 0) {
+      return ''
+    }
+    const users = i.assignees.map((u) => { return u.login })
+    return ` (assignee: ${users.join(', ')})`
   }
 
   private getTsIfDuplicated(ch: string): string {
@@ -368,6 +377,7 @@ export class GithubIssuesNotice {
     const labelColumn = 5
     const statsColumn = 6
     const idleColumn = 7
+    const assigneesColumn = 8
 
     const nameField = 0
     const thresholdField = 1
@@ -399,6 +409,11 @@ export class GithubIssuesNotice {
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
       const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
+
+      let showAssignees = task[assigneesColumn]
+      if (typeof showAssignees !== 'boolean') {
+        showAssignees = false
+      }
 
       let s = task[statsColumn]
       if (typeof s !== 'boolean') {
@@ -436,7 +451,7 @@ export class GithubIssuesNotice {
               issueTitles: []
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats, idle })
+          job.push({ channels, times, mentions, repos, labels, stats, idle, assignees })
         }
       }
     }
