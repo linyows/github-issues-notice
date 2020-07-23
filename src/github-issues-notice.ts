@@ -352,7 +352,7 @@ export class GithubIssuesNotice {
         continue
       }
       const h = l.name.replace(/\-/g, ' ')
-      const m = l.issueTitles.length > l.threshold ? ` -- ${l.message}` : ''
+      const m = l.issueTitles.length > l.threshold ? `${l.name.length > 0 ? ' -- ' : ''}${l.message}` : ''
       empty = false
       attachments.push({
         title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}${m}`,
