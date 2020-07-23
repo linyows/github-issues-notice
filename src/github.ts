@@ -213,8 +213,8 @@ export type PullRequest = {
   merge_commit_sha: string
   assignee: null|User
   assignees: User[]
-  requested_reviewers: User
-  requested_teams: Team
+  requested_reviewers: User[]
+  requested_teams: Team[]
   labels: Label[]
   milestone: null|Milestone
   draft: boolean
