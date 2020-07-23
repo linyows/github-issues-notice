@@ -183,6 +183,12 @@ export type Issue = {
   created_at: string
   updated_at: string
   author_association: string
+  pull_request?: {
+    url: string
+    html_url: string
+    diff_url: string
+    patch_url: string
+  }
   body: string
 }
 
