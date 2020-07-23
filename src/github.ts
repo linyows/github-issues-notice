@@ -49,7 +49,7 @@ export class Github {
     }
   }
 
-  public issues(repo: string, opts?: IssueOptions) {
+  public issues(repo: string, opts?: IssueOptions): Issue[] {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/issues?per_page=100`
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
@@ -60,7 +60,7 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public closeIssue(repo: string, num: number) {
+  public closeIssue(repo: string, num: number): Issue[] {
     const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues/${num}`, {
       method: 'patch',
       headers: this.headers,
@@ -70,7 +70,7 @@ export class Github {
     return res.getContentText()
   }
 
-  public pulls(repo: string, opts?: IssueOptions) {
+  public pulls(repo: string, opts?: IssueOptions): PullRequest[] {
     const defaultUrl = `${this.apiEndpoint}repos/${repo}/pulls?per_page=100`
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
