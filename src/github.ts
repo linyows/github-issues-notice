@@ -49,7 +49,7 @@ export class Github {
 
   public get headers(): any {
     return {
-      Authorization: `token ${this.token}`
+      Authorization: `token ${this.token}`,
     }
   }
 
@@ -58,18 +58,21 @@ export class Github {
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
       method: 'get',
-      headers: this.headers
+      headers: this.headers,
     })
 
     return JSON.parse(res.getContentText())
   }
 
   public closeIssue(repo: string, num: number): Issue[] {
-    const res = UrlFetchApp.fetch(`${this.apiEndpoint}repos/${repo}/issues/${num}`, {
-      method: 'patch',
-      headers: this.headers,
-      payload: JSON.stringify({ state: 'closed' })
-    })
+    const res = UrlFetchApp.fetch(
+      `${this.apiEndpoint}repos/${repo}/issues/${num}`,
+      {
+        method: 'patch',
+        headers: this.headers,
+        payload: JSON.stringify({ state: 'closed' }),
+      }
+    )
 
     return res.getContentText()
   }
@@ -79,18 +82,20 @@ export class Github {
     const optionUrl = opts ? Github.buildOptionUrl(opts) : ''
     const res = UrlFetchApp.fetch(`${defaultUrl}${optionUrl}`, {
       method: 'get',
-      headers: this.headers
+      headers: this.headers,
     })
 
     return JSON.parse(res.getContentText())
   }
 
   public pullsWithoutDraft(repo: string, opts?: IssueOptions): PullRequest[] {
-    return this.pulls(repo, opts).map(p => {
+    return this.pulls(repo, opts)
+      .map(p => {
         if (!p.draft) {
           return p
         }
-      }).filter(p => {
+      })
+      .filter(p => {
         return p !== undefined
       })
   }
@@ -143,7 +148,7 @@ export type Milestone = {
   created_at: string
   updated_at: string
   due_on: string
-  closed_at: null|string
+  closed_at: null | string
 }
 
 export type Team = {
@@ -176,9 +181,9 @@ export type Issue = {
   labels: Label[]
   state: string
   locked: boolean
-  assignee: null|User
+  assignee: null | User
   assignees: User[]
-  milestone: null|Milestone
+  milestone: null | Milestone
   comments: number
   created_at: string
   updated_at: string
@@ -208,15 +213,15 @@ export type PullRequest = {
   body: string
   created_at: string
   updated_at: string
-  closed_at: null|string
-  merged_at: null|string
+  closed_at: null | string
+  merged_at: null | string
   merge_commit_sha: string
-  assignee: null|User
+  assignee: null | User
   assignees: User[]
   requested_reviewers: User[]
   requested_teams: Team[]
   labels: Label[]
-  milestone: null|Milestone
+  milestone: null | Milestone
   draft: boolean
   commits_url: string
   review_comments_url: string

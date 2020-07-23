@@ -64,8 +64,8 @@ export class Slack {
       method: 'post',
       payload: {
         token: this.token,
-        name: channel
-      }
+        name: channel,
+      },
     })
 
     return JSON.parse(res.getContentText()).channel
@@ -76,7 +76,7 @@ export class Slack {
 
     const res = UrlFetchApp.fetch('https://slack.com/api/chat.postMessage', {
       method: 'post',
-      payload: { ...{ token: this.token, channel: channel }, ...opts }
+      payload: { ...{ token: this.token, channel: channel }, ...opts },
     })
 
     return JSON.parse(res.getContentText()).ok
@@ -87,7 +87,7 @@ export class Slack {
 
     const res = UrlFetchApp.fetch('https://slack.com/api/channels.history', {
       method: 'post',
-      payload: { ...{ token: this.token, channel: ch.id }, ...opts }
+      payload: { ...{ token: this.token, channel: ch.id }, ...opts },
     })
 
     return JSON.parse(res.getContentText()).messages
@@ -98,7 +98,7 @@ export class Slack {
 
     const res = UrlFetchApp.fetch('https://slack.com/api/chat.update', {
       method: 'post',
-      payload: { ...{ token: this.token, channel: ch.id }, ...opts }
+      payload: { ...{ token: this.token, channel: ch.id }, ...opts },
     })
 
     return JSON.parse(res.getContentText()).ok
