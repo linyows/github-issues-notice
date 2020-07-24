@@ -4,70 +4,14 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-import {Github} from './github'
-import {Slack} from './slack'
-
-interface GithubConfig {
-  token: string
-  apiEndpoint?: string
-}
-
-interface SlackConfig {
-  token: string
-  username: string
-  textSuffix: string
-  textEmpty: string
-  textDefault: string
-}
-
-interface SpreadsheetsConfig {
-  id: string
-  url: string
-}
-
-interface Config {
-  now: Date
-  slack: SlackConfig
-  github: GithubConfig
-  spreadsheets: SpreadsheetsConfig
-}
-
-interface Task {
-  channels: string[]
-  times: string[]
-  mentions: string[]
-  repos: string[]
-  labels: Label[]
-  stats: Stats
-  idle: Idle
-}
-
-interface Idle {
-  period: number
-  issueTitles: string[]
-}
-
-interface Stats {
-  enabled: boolean
-  issues: number
-  pulls: number
-  proactive: number
-}
-
-interface Label {
-  name: string
-  threshold: number
-  message: string
-  color: string
-  issueTitles: string[]
-}
+import { Github, Issue, PullRequest } from './github'
+import { Slack, Attachment } from './slack'
 
 /**
  * GithubIssuesNotice
  */
 export class GithubIssuesNotice {
-
-  private get slack(): any {
+  private get slack(): Slack {
     if (this.pSlack === undefined) {
       this.pSlack = new Slack(this.config.slack.token)
     }
@@ -75,10 +19,13 @@ export class GithubIssuesNotice {
     return this.pSlack
   }
 
-  private get github(): any {
+  private get github(): Github {
     if (this.pGithub === undefined) {
       if (this.config.github.apiEndpoint) {
-        this.pGithub = new Github(this.config.github.token, this.config.github.apiEndpoint)
+        this.pGithub = new Github(
+          this.config.github.token,
+          this.config.github.apiEndpoint
+        )
       } else {
         this.pGithub = new Github(this.config.github.token)
       }
@@ -87,7 +34,7 @@ export class GithubIssuesNotice {
     return this.pGithub
   }
 
-  private get sheet(): any {
+  private get sheet(): GoogleAppsScript.Spreadsheet.Sheet {
     if (this.pSheet === undefined) {
       const s = SpreadsheetApp.openById(this.config.spreadsheets.id)
       this.pSheet = s.getSheetByName('config')
@@ -96,23 +43,30 @@ export class GithubIssuesNotice {
     return this.pSheet
   }
 
-  private get data(): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private get data(): any[][] {
     if (this.pData === undefined) {
       const startRow = 2
       const startColumn = 1
       const numRow = this.sheet.getLastRow()
       const numColumn = this.sheet.getLastColumn()
-      this.pData = this.sheet.getSheetValues(startRow, startColumn, numRow, numColumn)
+      this.pData = this.sheet.getSheetValues(
+        startRow,
+        startColumn,
+        numRow,
+        numColumn
+      )
     }
 
     return this.pData
   }
 
   public config: Config
-  private pSheet: any
-  private pSlack: any
-  private pGithub: any
-  private pData: any
+  private pSheet: GoogleAppsScript.Spreadsheet.Sheet
+  private pSlack: Slack
+  private pGithub: Github
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pData: any[][]
 
   constructor(c: Config) {
     this.config = c
@@ -137,10 +91,8 @@ export class GithubIssuesNotice {
       return word
     }
 
-    return word.replace(/\w\S*/g, (t) => {
-      return `${t.charAt(0)
-                 .toUpperCase()}${t.substr(1)
-                                   .toLowerCase()}`
+    return word.replace(/\w\S*/g, t => {
+      return `${t.charAt(0).toUpperCase()}${t.substr(1).toLowerCase()}`
     })
   }
 
@@ -150,52 +102,62 @@ export class GithubIssuesNotice {
       v = v.trim()
     }
 
-    return arr.filter((v) => v)
+    return arr.filter(v => v)
   }
 
   private static statsEmoji(r: number): string {
-      const danger = 90
-      const caution = 80
-      const ng = 70
-      const warn = 60
-      const ok = 50
-      const good = 40
-      const great = 30
+    const danger = 90
+    const caution = 80
+    const ng = 70
+    const warn = 60
+    const ok = 50
+    const good = 40
+    const great = 30
 
-      switch (true) {
-        case r > danger: return ':skull:'
-        case r > caution: return ':fire:'
-        case r > ng: return ':jack_o_lantern:'
-        case r > warn: return ':space_invader:'
-        case r > ok: return ':surfer:'
-        case r > good: return ':palm_tree:'
-        case r > great: return ':helicopter:'
-        default: return ':rocket:'
-      }
+    switch (true) {
+      case r > danger:
+        return ':skull:'
+      case r > caution:
+        return ':fire:'
+      case r > ng:
+        return ':jack_o_lantern:'
+      case r > warn:
+        return ':space_invader:'
+      case r > ok:
+        return ':surfer:'
+      case r > good:
+        return ':palm_tree:'
+      case r > great:
+        return ':helicopter:'
+      default:
+        return ':rocket:'
+    }
   }
 
-  private static buildStatsAttachment(task: Task): object {
-      const p = task.stats.pulls
-      const i = task.stats.issues
-      const a = task.stats.proactive
-      const hundred = 100
-      const r = hundred - Math.floor(a / (a + (i - a)) * hundred)
-      const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/reactive-per.md'
-      const m = '--% :point_right: Please applying `proactive` label to voluntary issues'
-      const info = r === hundred ? m : `${GithubIssuesNotice.statsEmoji(r)} ${r}%`
+  private static buildStatsAttachment(task: Task): Attachment {
+    const p = task.stats.pulls
+    const i = task.stats.issues
+    const a = task.stats.proactive
+    const hundred = 100
+    const r = hundred - Math.floor((a / (a + (i - a))) * hundred)
+    const url =
+      'https://github.com/linyows/github-issues-notice/blob/master/docs/reactive-per.md'
+    const m =
+      '--% :point_right: Please applying `proactive` label to voluntary issues'
+    const info = r === hundred ? m : `${GithubIssuesNotice.statsEmoji(r)} ${r}%`
 
-      return {
-        title: `Stats for ${task.repos.length} repositories`,
-        color: '#000000',
-        text: '',
-        footer: `Stats | <${url}|What is this?>`,
-        footer_icon: 'https://octodex.github.com/images/surftocat.png',
-        fields: [
-          { title: 'Reactive Per', value: `${info}`, short: false },
-          { title: 'Open Issues Total', value: `${i - p}`, short: true },
-          { title: 'Open Pulls Total', value: `${p}`, short: true }
-        ]
-      }
+    return {
+      title: `Stats for ${task.repos.length} repositories`,
+      color: '#000000',
+      text: '',
+      footer: `Stats | <${url}|What is this?>`,
+      footer_icon: 'https://octodex.github.com/images/surftocat.png',
+      fields: [
+        { title: 'Reactive Per', value: `${info}`, short: false },
+        { title: 'Open Issues Total', value: `${i - p}`, short: true },
+        { title: 'Open Pulls Total', value: `${p}`, short: true },
+      ],
+    }
   }
 
   public doJob(): void {
@@ -214,16 +176,21 @@ export class GithubIssuesNotice {
     const oneH = 3600
     const oneS = 1000
     const now = new Date()
-    const period = now.getTime() - (idle.period * oneD * oneH * oneS)
+    const period = now.getTime() - idle.period * oneD * oneH * oneS
 
     try {
-      const issues = this.github.issues(repo, { sort: 'asc', direction: 'updated' })
+      const issues = this.github.issues(repo, {
+        sort: 'asc',
+        direction: 'updated',
+      })
       for (const i of issues) {
         if (Date.parse(i.updated_at) > period) {
           continue
         }
         this.github.closeIssue(repo, i.number)
-        idle.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
+        idle.issueTitles.push(
+          `<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`
+        )
       }
     } catch (e) {
       console.error(e)
@@ -253,14 +220,43 @@ export class GithubIssuesNotice {
       for (const l of task.labels) {
         try {
           const labels = l.name
-          const issues = this.github.issues(repo, { labels })
-          for (const i of issues) {
+          if (!task.onlyPulls) {
+            // Issues without Pull Request
+            const state = task.labelProtection ? 'all' : 'open'
+            const issues = this.github.issues(repo, { labels, state })
+            for (const i of issues) {
+              if (Github.IsPullRequestIssue(i)) {
+                continue
+              }
+              for (const ll of i.labels) {
+                if (l.name === ll.name) {
+                  l.color = ll.color
+                }
+              }
+              const warn =
+                task.labelProtection && i.state === 'closed'
+                  ? ':warning: Closed: '
+                  : ''
+              l.issueTitles.push(
+                `${warn}<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${
+                  task.relations ? this.buildIssueRelations(i) : ''
+                }`
+              )
+            }
+          }
+          // Pull Requests without Draft
+          const pulls = this.github.pullsWithoutDraft(repo, { labels })
+          for (const i of pulls) {
             for (const ll of i.labels) {
               if (l.name === ll.name) {
                 l.color = ll.color
               }
             }
-            l.issueTitles.push(`<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`)
+            l.issueTitles.push(
+              `<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${
+                task.relations ? this.buildPullRelations(i) : ''
+              }`
+            )
           }
         } catch (e) {
           console.error(e)
@@ -270,28 +266,71 @@ export class GithubIssuesNotice {
     this.notify(task)
   }
 
-  private getTsIfDuplicated(ch: string): string {
-    const msgs = this.slack.channelsHistory(ch, { count: 1 })
-    const msg = msgs[0]
-
-    return (msg.username === this.config.slack.username &&
-      msg.text.indexOf(this.config.slack.textEmpty) !== -1) ? msg.ts : ''
+  private buildIssueRelations(i: Issue): string {
+    if (i.assignees.length == 0) {
+      return ''
+    }
+    return ` (Assignees: ${i.assignees
+      .map(u => {
+        return u.login
+      })
+      .join(', ')})`
   }
 
-  private postMessageOrUpdate(ch: string) {
-    const ts = this.getTsIfDuplicated(ch)
+  private buildPullRelations(i: PullRequest): string {
+    if (i.assignees.length == 0 && i.requested_reviewers.length == 0) {
+      return ''
+    }
+    const r = []
+    if (i.assignees.length > 0) {
+      r.push(
+        'Assignees: ' +
+          i.assignees
+            .map(u => {
+              return u.login
+            })
+            .join(', ')
+      )
+    }
+    if (i.requested_reviewers.length > 0) {
+      r.push(
+        'Reviewers: ' +
+          i.requested_reviewers
+            .map(u => {
+              return u.login
+            })
+            .join(', ')
+      )
+    }
+    return ` (${r.join(', ')})`
+  }
+
+  private getTsIfDuplicated(channel: string): string {
+    const msgs = this.slack.channelsHistory({ channel, count: 1 })
+    const msg = msgs[0]
+
+    return msg.username === this.config.slack.username &&
+      msg.text.indexOf(this.config.slack.textEmpty) !== -1
+      ? msg.ts
+      : ''
+  }
+
+  private postMessageOrUpdate(channel: string) {
+    const ts = this.getTsIfDuplicated(channel)
     if (ts === '') {
-      this.slack.postMessage(ch, {
+      this.slack.postMessage({
+        channel,
         username: this.config.slack.username,
         icon_emoji: ':octocat:',
         link_names: 1,
-        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}`
+        text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}`,
       })
     } else {
       const updatedAt = ` -- :hourglass: last updated at: ${this.config.now}`
-      this.slack.chatUpdate(ch, {
+      this.slack.chatUpdate({
+        channel,
         text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}${updatedAt}`,
-        ts: ts
+        ts: ts,
       })
     }
   }
@@ -309,28 +348,39 @@ export class GithubIssuesNotice {
       if (l.issueTitles.length === 0) {
         continue
       }
-      const h = l.name.replace(/\-/g, ' ')
-      const m = l.issueTitles.length > l.threshold ? ` -- ${l.message}` : ''
+      const h = l.name.replace(/-/g, ' ')
+      const m =
+        l.issueTitles.length > l.threshold
+          ? `${l.name.length > 0 ? ' -- ' : ''}${l.message}`
+          : ''
       empty = false
       attachments.push({
-        title: `${h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)}${m}`,
+        title: `${
+          h.toUpperCase() === h ? h : GithubIssuesNotice.CAPITALIZE(h)
+        }${m}`,
         color: l.color,
-        text: l.issueTitles.join('\n')
+        text: l.issueTitles.join('\n'),
       })
     }
 
     if (task.idle.issueTitles.length > 0) {
-      const url = 'https://github.com/linyows/github-issues-notice/blob/master/docs/idle-period.md'
+      const url =
+        'https://github.com/linyows/github-issues-notice/blob/master/docs/idle-period.md'
       empty = false
       attachments.push({
         title: `Closed with no change over ${task.idle.period}days`,
         color: '#CCCCCC',
         text: task.idle.issueTitles.join('\n'),
         footer: `Idle Period | <${url}|What is this?>`,
-        footer_icon: 'https://octodex.github.com/images/Sentrytocat_octodex.jpg',
+        footer_icon:
+          'https://octodex.github.com/images/Sentrytocat_octodex.jpg',
         fields: [
-          { title: 'Closed Total', value: `${task.idle.issueTitles.length}`, short: true }
-        ]
+          {
+            title: 'Closed Total',
+            value: `${task.idle.issueTitles.length}`,
+            short: true,
+          },
+        ],
       })
     }
 
@@ -339,20 +389,22 @@ export class GithubIssuesNotice {
       messages.push(this.config.slack.textDefault)
     }
 
-    for (const ch of task.channels) {
+    for (const channel of task.channels) {
       try {
         if (empty) {
-          this.postMessageOrUpdate(ch)
+          this.postMessageOrUpdate(channel)
         } else {
-          this.slack.postMessage(ch, {
+          this.slack.postMessage({
+            channel,
             username: this.config.slack.username,
             icon_emoji: ':octocat:',
             link_names: 1,
-            text: `${mention}${messages.join(' ')}${this.config.slack.textSuffix}`,
-            attachments: JSON.stringify(attachments)
+            text: `${mention}${messages.join(' ')}${
+              this.config.slack.textSuffix
+            }`,
+            attachments: JSON.stringify(attachments),
           })
         }
-
       } catch (e) {
         console.error(e)
       }
@@ -368,6 +420,9 @@ export class GithubIssuesNotice {
     const labelColumn = 5
     const statsColumn = 6
     const idleColumn = 7
+    const relationsColumn = 8
+    const onlyPullsColumn = 9
+    const labelProtectionColumn = 10
 
     const nameField = 0
     const thresholdField = 1
@@ -398,7 +453,22 @@ export class GithubIssuesNotice {
       const channels = GithubIssuesNotice.NORMALIZE(`${task[channelColumn]}`)
       const times = GithubIssuesNotice.NORMALIZE(`${task[timeColumn]}`)
       const mentions = GithubIssuesNotice.NORMALIZE(`${task[mentionColumn]}`)
-      const labelsWithInfo = GithubIssuesNotice.NORMALIZE(`${task[labelColumn]}`)
+      const labelsWithInfo = GithubIssuesNotice.NORMALIZE(
+        `${task[labelColumn]}`
+      )
+
+      let relations = task[relationsColumn]
+      if (typeof relations !== 'boolean') {
+        relations = false
+      }
+      let onlyPulls = task[onlyPullsColumn]
+      if (typeof onlyPulls !== 'boolean') {
+        onlyPulls = false
+      }
+      let labelProtection = task[labelProtectionColumn]
+      if (typeof labelProtection !== 'boolean') {
+        labelProtection = false
+      }
 
       let s = task[statsColumn]
       if (typeof s !== 'boolean') {
@@ -408,7 +478,7 @@ export class GithubIssuesNotice {
         enabled: s,
         issues: 0,
         pulls: 0,
-        proactive: 0
+        proactive: 0,
       }
 
       let idlePeriod = task[idleColumn]
@@ -417,12 +487,15 @@ export class GithubIssuesNotice {
       }
       const idle: Idle = {
         period: idlePeriod,
-        issueTitles: []
+        issueTitles: [],
       }
 
       for (const time of times) {
         const hour = time.substr(0, timeLength)
-        const min = time.length === timeFullLength ? time.substr(minStart, timeLength) : '00'
+        const min =
+          time.length === timeFullLength
+            ? time.substr(minStart, timeLength)
+            : '00'
 
         if (hour === nowH && min === nowM) {
           const labels: Label[] = []
@@ -433,14 +506,83 @@ export class GithubIssuesNotice {
               threshold: +arr[thresholdField],
               message: arr[messageField],
               color: '',
-              issueTitles: []
+              issueTitles: [],
             })
           }
-          job.push({ channels, times, mentions, repos, labels, stats, idle })
+          job.push({
+            channels,
+            times,
+            mentions,
+            repos,
+            labels,
+            stats,
+            idle,
+            relations,
+            onlyPulls,
+            labelProtection,
+          })
         }
       }
     }
 
     return job
   }
+}
+
+type GithubConfig = {
+  token: string
+  apiEndpoint?: string
+}
+
+type SlackConfig = {
+  token: string
+  username: string
+  textSuffix: string
+  textEmpty: string
+  textDefault: string
+}
+
+type SpreadsheetsConfig = {
+  id: string
+  url: string
+}
+
+type Config = {
+  now: Date
+  slack: SlackConfig
+  github: GithubConfig
+  spreadsheets: SpreadsheetsConfig
+}
+
+type Task = {
+  channels: string[]
+  times: string[]
+  mentions: string[]
+  repos: string[]
+  labels: Label[]
+  stats: Stats
+  idle: Idle
+  relations: boolean
+  onlyPulls: boolean
+  labelProtection: boolean
+}
+
+type Idle = {
+  period: number
+  issueTitles: string[]
+}
+
+type Stats = {
+  enabled: boolean
+  issues: number
+  pulls: number
+  proactive: number
+}
+
+type Label = {
+  name: string
+  threshold: number
+  message: string
+  color: string
+  issueTitles: string[]
 }
