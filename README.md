@@ -3,7 +3,7 @@ GitHub Issues Notice
 
 Notify slack the title of the specified repository and label issues on GAS.
 
-<a href="https://travis-ci.org/linyows/github-issues-notice" title="travis"><img src="https://img.shields.io/travis/linyows/github-issues-notice.svg?style=for-the-badge"></a>
+<a href="https://github.com/linyows/github-issues-notice/actions" title="actions"><img src="https://img.shields.io/github/workflow/status/linyows/github-issues-notice/build?style=for-the-badge"></a>
 <a href="https://github.com/google/clasp" title="clasp"><img src="https://img.shields.io/badge/built%20with-clasp-4285f4.svg?style=for-the-badge"></a>
 <a href="https://github.com/linyows/github-issues-notice/blob/master/LICENSE" title="MIT License"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=for-the-badge"></a>
 
