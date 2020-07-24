@@ -529,12 +529,12 @@ export class GithubIssuesNotice {
   }
 }
 
-interface GithubConfig {
+type GithubConfig = {
   token: string
   apiEndpoint?: string
 }
 
-interface SlackConfig {
+type SlackConfig = {
   token: string
   username: string
   textSuffix: string
@@ -542,19 +542,19 @@ interface SlackConfig {
   textDefault: string
 }
 
-interface SpreadsheetsConfig {
+type SpreadsheetsConfig = {
   id: string
   url: string
 }
 
-interface Config {
+type Config = {
   now: Date
   slack: SlackConfig
   github: GithubConfig
   spreadsheets: SpreadsheetsConfig
 }
 
-interface Task {
+type Task = {
   channels: string[]
   times: string[]
   mentions: string[]
@@ -567,19 +567,19 @@ interface Task {
   labelProtection: boolean
 }
 
-interface Idle {
+type Idle = {
   period: number
   issueTitles: string[]
 }
 
-interface Stats {
+type Stats = {
   enabled: boolean
   issues: number
   pulls: number
   proactive: number
 }
 
-interface Label {
+type Label = {
   name: string
   threshold: number
   message: string
