@@ -5,71 +5,13 @@
  */
 
 import { Github, Issue, PullRequest } from './github'
-import { Slack } from './slack'
-
-interface GithubConfig {
-  token: string
-  apiEndpoint?: string
-}
-
-interface SlackConfig {
-  token: string
-  username: string
-  textSuffix: string
-  textEmpty: string
-  textDefault: string
-}
-
-interface SpreadsheetsConfig {
-  id: string
-  url: string
-}
-
-interface Config {
-  now: Date
-  slack: SlackConfig
-  github: GithubConfig
-  spreadsheets: SpreadsheetsConfig
-}
-
-interface Task {
-  channels: string[]
-  times: string[]
-  mentions: string[]
-  repos: string[]
-  labels: Label[]
-  stats: Stats
-  idle: Idle
-  relations: boolean
-  onlyPulls: boolean
-  labelProtection: boolean
-}
-
-interface Idle {
-  period: number
-  issueTitles: string[]
-}
-
-interface Stats {
-  enabled: boolean
-  issues: number
-  pulls: number
-  proactive: number
-}
-
-interface Label {
-  name: string
-  threshold: number
-  message: string
-  color: string
-  issueTitles: string[]
-}
+import { Slack, Attachment } from './slack'
 
 /**
  * GithubIssuesNotice
  */
 export class GithubIssuesNotice {
-  private get slack(): any {
+  private get slack(): Slack {
     if (this.pSlack === undefined) {
       this.pSlack = new Slack(this.config.slack.token)
     }
@@ -77,7 +19,7 @@ export class GithubIssuesNotice {
     return this.pSlack
   }
 
-  private get github(): any {
+  private get github(): Github {
     if (this.pGithub === undefined) {
       if (this.config.github.apiEndpoint) {
         this.pGithub = new Github(
@@ -92,7 +34,7 @@ export class GithubIssuesNotice {
     return this.pGithub
   }
 
-  private get sheet(): any {
+  private get sheet(): GoogleAppsScript.Spreadsheet.Sheet {
     if (this.pSheet === undefined) {
       const s = SpreadsheetApp.openById(this.config.spreadsheets.id)
       this.pSheet = s.getSheetByName('config')
@@ -101,7 +43,8 @@ export class GithubIssuesNotice {
     return this.pSheet
   }
 
-  private get data(): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private get data(): any[][] {
     if (this.pData === undefined) {
       const startRow = 2
       const startColumn = 1
@@ -119,10 +62,11 @@ export class GithubIssuesNotice {
   }
 
   public config: Config
-  private pSheet: any
-  private pSlack: any
-  private pGithub: any
-  private pData: any
+  private pSheet: GoogleAppsScript.Spreadsheet.Sheet
+  private pSlack: Slack
+  private pGithub: Github
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private pData: any[][]
 
   constructor(c: Config) {
     this.config = c
@@ -190,7 +134,7 @@ export class GithubIssuesNotice {
     }
   }
 
-  private static buildStatsAttachment(task: Task): object {
+  private static buildStatsAttachment(task: Task): Attachment {
     const p = task.stats.pulls
     const i = task.stats.issues
     const a = task.stats.proactive
@@ -361,8 +305,8 @@ export class GithubIssuesNotice {
     return ` (${r.join(', ')})`
   }
 
-  private getTsIfDuplicated(ch: string): string {
-    const msgs = this.slack.channelsHistory(ch, { count: 1 })
+  private getTsIfDuplicated(channel: string): string {
+    const msgs = this.slack.channelsHistory({ channel, count: 1 })
     const msg = msgs[0]
 
     return msg.username === this.config.slack.username &&
@@ -371,10 +315,11 @@ export class GithubIssuesNotice {
       : ''
   }
 
-  private postMessageOrUpdate(ch: string) {
-    const ts = this.getTsIfDuplicated(ch)
+  private postMessageOrUpdate(channel: string) {
+    const ts = this.getTsIfDuplicated(channel)
     if (ts === '') {
-      this.slack.postMessage(ch, {
+      this.slack.postMessage({
+        channel,
         username: this.config.slack.username,
         icon_emoji: ':octocat:',
         link_names: 1,
@@ -382,7 +327,8 @@ export class GithubIssuesNotice {
       })
     } else {
       const updatedAt = ` -- :hourglass: last updated at: ${this.config.now}`
-      this.slack.chatUpdate(ch, {
+      this.slack.chatUpdate({
+        channel,
         text: `${this.config.slack.textEmpty}${this.config.slack.textSuffix}${updatedAt}`,
         ts: ts,
       })
@@ -402,7 +348,7 @@ export class GithubIssuesNotice {
       if (l.issueTitles.length === 0) {
         continue
       }
-      const h = l.name.replace(/\-/g, ' ')
+      const h = l.name.replace(/-/g, ' ')
       const m =
         l.issueTitles.length > l.threshold
           ? `${l.name.length > 0 ? ' -- ' : ''}${l.message}`
@@ -443,12 +389,13 @@ export class GithubIssuesNotice {
       messages.push(this.config.slack.textDefault)
     }
 
-    for (const ch of task.channels) {
+    for (const channel of task.channels) {
       try {
         if (empty) {
-          this.postMessageOrUpdate(ch)
+          this.postMessageOrUpdate(channel)
         } else {
-          this.slack.postMessage(ch, {
+          this.slack.postMessage({
+            channel,
             username: this.config.slack.username,
             icon_emoji: ':octocat:',
             link_names: 1,
@@ -580,4 +527,62 @@ export class GithubIssuesNotice {
 
     return job
   }
+}
+
+interface GithubConfig {
+  token: string
+  apiEndpoint?: string
+}
+
+interface SlackConfig {
+  token: string
+  username: string
+  textSuffix: string
+  textEmpty: string
+  textDefault: string
+}
+
+interface SpreadsheetsConfig {
+  id: string
+  url: string
+}
+
+interface Config {
+  now: Date
+  slack: SlackConfig
+  github: GithubConfig
+  spreadsheets: SpreadsheetsConfig
+}
+
+interface Task {
+  channels: string[]
+  times: string[]
+  mentions: string[]
+  repos: string[]
+  labels: Label[]
+  stats: Stats
+  idle: Idle
+  relations: boolean
+  onlyPulls: boolean
+  labelProtection: boolean
+}
+
+interface Idle {
+  period: number
+  issueTitles: string[]
+}
+
+interface Stats {
+  enabled: boolean
+  issues: number
+  pulls: number
+  proactive: number
+}
+
+interface Label {
+  name: string
+  threshold: number
+  message: string
+  color: string
+  issueTitles: string[]
 }

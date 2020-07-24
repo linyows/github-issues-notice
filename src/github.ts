@@ -4,13 +4,6 @@
  * Copyright (c) 2018 Tomohisa Oda
  */
 
-interface IssueOptions {
-  labels?: string
-  since?: string
-  sort?: string
-  direction?: string
-}
-
 /**
  * Github Client
  */
@@ -47,7 +40,7 @@ export class Github {
     return u
   }
 
-  public get headers(): any {
+  public get headers(): Headers {
     return {
       Authorization: `token ${this.token}`,
     }
@@ -74,7 +67,7 @@ export class Github {
       }
     )
 
-    return res.getContentText()
+    return JSON.parse(res.getContentText())
   }
 
   public pulls(repo: string, opts?: IssueOptions): PullRequest[] {
@@ -228,8 +221,20 @@ export type PullRequest = {
   review_comment_url: string
   comments_url: string
   statuses_url: string
-  head: any
-  base: any
-  _links: any
+  //head: any
+  //base: any
+  //_links: any
   author_association: string
+}
+
+type IssueOptions = {
+  labels?: string
+  since?: string
+  sort?: string
+  direction?: string
+  state?: string
+}
+
+type Headers = {
+  Authorization: string
 }

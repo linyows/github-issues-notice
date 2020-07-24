@@ -41,6 +41,7 @@ const notice = new GithubIssuesNotice({
 /**
  * notify notify labeled issues to slack
  */
+/* eslint @typescript-eslint/no-unused-vars: 0 */
 function notify() {
   notice.doJob()
 }
