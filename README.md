@@ -58,6 +58,22 @@ If there is a number of days in the Idle period, it will be automatically closed
 if there are no issues or pulls that have not been updated over that number of days.
 If you do not want to use this function, please set it to blank or 0.
 
+Add Relations
+--
+
+Add relationship to notifications to Slack. Specifically, include assignees and reviewers.
+If you use this option, you should set [code review assignments](https://docs.github.com/en/github/setting-up-and-managing-organizations-and-teams/managing-code-review-assignment-for-your-team) on Github.
+
+Only P/R
+--
+
+The target of monitoring is only pull requests other than draft.
+
+Label Protection
+--
+
+Closed Issue is also monitored for Issue label. This will notify you of any issues that have been accidentally closed.
+
 Contribution
 ------------
 
