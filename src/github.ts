@@ -36,6 +36,9 @@ export class Github {
     if (opts.sort) {
       u += `&sort=${opts.sort}`
     }
+    if (opts.state) {
+      u += `&state=${opts.state}`
+    }
 
     return u
   }
