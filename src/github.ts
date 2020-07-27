@@ -27,6 +27,8 @@ export class Github {
   private static buildOptionUrl(opts: IssueOptions): string {
     let u = ''
 
+    // Labels option is not available for pulls API
+    // https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     if (opts.labels) {
       u += `&labels=${opts.labels}`
     }
