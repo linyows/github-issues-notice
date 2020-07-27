@@ -86,7 +86,7 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public pullsWithoutDraft(repo: string, opts?: IssueOptions): PullRequest[] {
+  public pullsWithoutDraftAndOnlySpecifiedLabels(repo: string, opts?: IssueOptions): PullRequest[] {
     return this.pulls(repo, opts)
       .map(p => {
         if (!p.draft) {
