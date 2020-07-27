@@ -245,7 +245,10 @@ export class GithubIssuesNotice {
             }
           }
           // Pull Requests without Draft
-          const pulls = this.github.pullsWithoutDraft(repo, { labels })
+          const pulls = this.github.pullsWithoutDraftAndOnlySpecifiedLabels(
+            repo,
+            { labels }
+          )
           for (const i of pulls) {
             for (const ll of i.labels) {
               if (l.name === ll.name) {

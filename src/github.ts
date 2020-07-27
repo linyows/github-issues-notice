@@ -27,6 +27,8 @@ export class Github {
   private static buildOptionUrl(opts: IssueOptions): string {
     let u = ''
 
+    // Labels option is not available for pulls API
+    // https://docs.github.com/en/rest/reference/pulls#list-pull-requests
     if (opts.labels) {
       u += `&labels=${opts.labels}`
     }
@@ -84,16 +86,34 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public pullsWithoutDraft(repo: string, opts?: IssueOptions): PullRequest[] {
+  public pullsWithoutDraftAndOnlySpecifiedLabels(
+    repo: string,
+    opts?: IssueOptions
+  ): PullRequest[] {
     return this.pulls(repo, opts)
       .map(p => {
         if (!p.draft) {
-          return p
+          if (
+            opts.labels.length === 0 ||
+            this.isLabelsMatching(opts.labels, p)
+          ) {
+            return p
+          }
         }
       })
       .filter(p => {
         return p !== undefined
       })
+  }
+
+  private isLabelsMatching(l: string, p: PullRequest): boolean {
+    const labels = l.split(',')
+    for (const label of labels) {
+      if (p.labels.find(pl => pl.name === label) === undefined) {
+        return false
+      }
+    }
+    return true
   }
 }
 
