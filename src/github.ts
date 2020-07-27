@@ -90,7 +90,9 @@ export class Github {
     return this.pulls(repo, opts)
       .map(p => {
         if (!p.draft) {
-          return p
+          if (opts.labels.length === 0 || this.isLabelsMatching(opts.labels, p)) {
+            return p
+          }
         }
       })
       .filter(p => {
