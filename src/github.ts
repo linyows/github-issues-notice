@@ -86,11 +86,17 @@ export class Github {
     return JSON.parse(res.getContentText())
   }
 
-  public pullsWithoutDraftAndOnlySpecifiedLabels(repo: string, opts?: IssueOptions): PullRequest[] {
+  public pullsWithoutDraftAndOnlySpecifiedLabels(
+    repo: string,
+    opts?: IssueOptions
+  ): PullRequest[] {
     return this.pulls(repo, opts)
       .map(p => {
         if (!p.draft) {
-          if (opts.labels.length === 0 || this.isLabelsMatching(opts.labels, p)) {
+          if (
+            opts.labels.length === 0 ||
+            this.isLabelsMatching(opts.labels, p)
+          ) {
             return p
           }
         }
