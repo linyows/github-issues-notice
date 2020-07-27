@@ -97,6 +97,16 @@ export class Github {
         return p !== undefined
       })
   }
+
+  private isLabelsMatching(l: string, p: PullRequest): boolean {
+    const labels = l.split(',')
+    for (const label of labels) {
+      if (p.labels.find(pl => pl.name === label) === undefined) {
+        return false
+      }
+    }
+    return true
+  }
 }
 
 export type User = {
