@@ -240,9 +240,9 @@ export class GithubIssuesNotice {
                   ? ':warning: Closed: '
                   : ''
               l.issueTitles.push(
-                `${warn}<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}${
-                  task.relations ? this.buildIssueRelations(i) : ''
-                }`
+                `${warn}<${i.html_url}|${i.title}> (${displayRepo}) by ${
+                  i.user.login
+                }${task.relations ? this.buildIssueRelations(i) : ''}`
               )
             }
           }
