@@ -171,12 +171,13 @@ export class GithubIssuesNotice {
     }
   }
 
-  private tidyUpIssues(repo: string, idle: Idle) {
+  private tidyUpIssues(repo: string, task: Task) {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
     const now = new Date()
-    const period = now.getTime() - idle.period * oneD * oneH * oneS
+    const period = now.getTime() - task.idle.period * oneD * oneH * oneS
+    const displayRepo = task.showOrg ? repo : repo.split('/').pop()
 
     try {
       const issues = this.github.issues(repo, {
@@ -188,8 +189,8 @@ export class GithubIssuesNotice {
           continue
         }
         this.github.closeIssue(repo, i.number)
-        idle.issueTitles.push(
-          `<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}`
+        task.idle.issueTitles.push(
+          `<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}`
         )
       }
     } catch (e) {
@@ -204,7 +205,7 @@ export class GithubIssuesNotice {
       }
 
       if (task.idle.period > 0) {
-        this.tidyUpIssues(repo, task.idle)
+        this.tidyUpIssues(repo, task)
       }
 
       if (task.stats.enabled) {
@@ -216,6 +217,7 @@ export class GithubIssuesNotice {
         task.stats.pulls = task.stats.pulls + p.length
         task.stats.proactive = task.stats.proactive + a.length
       }
+      const displayRepo = task.showOrg ? repo : repo.split('/').pop()
 
       for (const l of task.labels) {
         try {
@@ -238,7 +240,7 @@ export class GithubIssuesNotice {
                   ? ':warning: Closed: '
                   : ''
               l.issueTitles.push(
-                `${warn}<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${
+                `${warn}<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}${
                   task.relations ? this.buildIssueRelations(i) : ''
                 }`
               )
@@ -256,7 +258,7 @@ export class GithubIssuesNotice {
               }
             }
             l.issueTitles.push(
-              `<${i.html_url}|${i.title}>(${repo}) by ${i.user.login}${
+              `<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}${
                 task.relations ? this.buildPullRelations(i) : ''
               }`
             )
@@ -426,6 +428,7 @@ export class GithubIssuesNotice {
     const relationsColumn = 8
     const onlyPullsColumn = 9
     const labelProtectionColumn = 10
+    const showOrgColumn = 11
 
     const nameField = 0
     const thresholdField = 1
@@ -471,6 +474,10 @@ export class GithubIssuesNotice {
       let labelProtection = task[labelProtectionColumn]
       if (typeof labelProtection !== 'boolean') {
         labelProtection = false
+      }
+      let showOrg = task[showOrgColumn]
+      if (typeof showOrg !== 'boolean') {
+        showOrg = false
       }
 
       let s = task[statsColumn]
@@ -523,6 +530,7 @@ export class GithubIssuesNotice {
             relations,
             onlyPulls,
             labelProtection,
+            showOrg,
           })
         }
       }
@@ -568,6 +576,7 @@ type Task = {
   relations: boolean
   onlyPulls: boolean
   labelProtection: boolean
+  showOrg: boolean
 }
 
 type Idle = {
