@@ -4,8 +4,7 @@
   "description": "Notify slack the title of the specified repository and label issues on GAS.",
   "scripts": {
     "ci": "npm i && npm run lint",
-    "lint": "eslint ./src/**/*.ts",
-    "lint:fix": "eslint --fix ./src/**/*.ts"
+    "lint": "eslint ./src/**/*.ts"
   },
   "devDependencies": {
     "@google/clasp": "^2.3.0",
