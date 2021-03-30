@@ -9,9 +9,11 @@
  */
 export class Slack {
   private token: string
+  private channels: Channel[]
 
   constructor(token: string) {
     this.token = token
+    this.channels = []
   }
 
   public request<T>({ endpoint, body }: Request): T {
@@ -22,15 +24,49 @@ export class Slack {
         ...body,
       },
     })
-    console.log(body, res.getContentText())
+    console.log(endpoint, body, res.getContentText())
     return JSON.parse(res.getContentText())
   }
 
-  public joinChannel(channel: string): Channel {
-    return this.request<JoinChannelResponse>({
-      endpoint: 'channels.join',
-      body: { name: channel },
+  public channelList(c: string): ListConversationResponse {
+    return this.request<ListConversationResponse>({
+      endpoint: 'conversations.list',
+      body: {
+        exclude_archived: true,
+        limit: 1000,
+        cursor: c,
+      },
+    })
+  }
+
+  public channelListAll(): Channel[] {
+    if (this.channels.length > 0) {
+      return this.channels
+    }
+    let channels: Channel[] = []
+    let cursor: string = ''
+    while (true) {
+      const c = this.channelList(cursor)
+      channels = [...channels, ...c.channels]
+      cursor = c.response_metadata.next_cursor
+      if (cursor === '') {
+        break
+      }
+    }
+    this.channels = channels
+    return channels
+  }
+
+  public joinConversation(channel: string): Channel {
+    return this.request<JoinConversationResponse>({
+      endpoint: 'conversations.join',
+      body: { channel },
     }).channel
+  }
+
+  public joinChannel(channel: string): Channel {
+    const c = this.channelListAll().find(v => v.name === channel)
+    return this.joinConversation(c.id)
   }
 
   public postMessage(body: PostMessage): boolean {
@@ -41,11 +77,11 @@ export class Slack {
     }).ok
   }
 
-  public channelsHistory(body: ChannelsHistory): ChannelsHistoryMessage[] {
+  public conversationsHistory(body: ConversationsHistory): ConversationsHistoryMessage[] {
     const ch = this.joinChannel(body.channel)
     body.channel = ch.id
-    return this.request<ChannelsHistoryResponse>({
-      endpoint: 'channels.history',
+    return this.request<ConversationsHistoryResponse>({
+      endpoint: 'conversations.history',
       body,
     }).messages
   }
@@ -62,7 +98,7 @@ export class Slack {
 
 type Request = {
   endpoint: string
-  body: { name: string } | PostMessage | ChannelsHistory | ChatUpdate
+  body: { name: string } | PostMessage | ConversationsHistory | ChatUpdate | ListConversation
 }
 
 type PostMessage = {
@@ -96,7 +132,7 @@ type Channel = {
   members: string[]
 }
 
-type JoinChannelResponse = {
+type JoinConversationResponse = {
   ok: boolean
   channel: Channel
 }
@@ -128,13 +164,13 @@ export type Attachment = {
   footer_icon?: string
 }
 
-export type ChannelsHistory = {
+export type ConversationsHistory = {
   channel: string
-  count?: number
+  cursor?: string
   inclusive?: number
   latest?: string
+  limit?: number
   oldest?: number
-  unreads?: number
 }
 
 export type ChatUpdate = {
@@ -154,13 +190,13 @@ type Reaction = {
   users: string[]
 }
 
-type ChannelsHistoryAttachment = {
+type ConversationsHistoryAttachment = {
   text: string
   id: number
   fallback: string
 }
 
-export type ChannelsHistoryMessage = {
+export type ConversationsHistoryMessage = {
   type: string
   ts: string
   user?: string
@@ -170,11 +206,25 @@ export type ChannelsHistoryMessage = {
   username?: string
   bot_id?: string
   subtype?: string
-  attachments?: ChannelsHistoryAttachment[]
+  attachments?: ConversationsHistoryAttachment[]
 }
 
-type ChannelsHistoryResponse = {
+type ConversationsHistoryResponse = {
   ok: boolean
-  messages: ChannelsHistoryMessage[]
+  messages: ConversationsHistoryMessage[]
   has_more: boolean
+}
+
+type ListConversation = {
+  exclude_archived: boolean
+  limit: number
+  cursor: string
+}
+
+type ListConversationResponse = {
+  ok: boolean
+  channels: Channel[]
+  response_metadata: {
+    next_cursor: string
+  }
 }

@@ -311,7 +311,7 @@ export class GithubIssuesNotice {
   }
 
   private getTsIfDuplicated(channel: string): string {
-    const msgs = this.slack.channelsHistory({ channel, count: 1 })
+    const msgs = this.slack.conversationsHistory({ channel })
     const msg = msgs[0]
 
     return msg.username === this.config.slack.username &&
