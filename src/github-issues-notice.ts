@@ -178,7 +178,7 @@ export class GithubIssuesNotice {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
-    const now = new Date()
+    const now = this.config.now
     const period = now.getTime() - task.idle.period * oneD * oneH * oneS
     const displayRepo = task.showOrg ? repo : repo.split('/').pop()
 
