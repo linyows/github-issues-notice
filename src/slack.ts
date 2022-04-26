@@ -44,7 +44,9 @@ export class Slack {
       return this.channels
     }
     let channels: Channel[] = []
-    let cursor: string = ''
+    let cursor = ''
+
+    /* eslint no-constant-condition: 0 */
     while (true) {
       const c = this.channelList(cursor)
       channels = [...channels, ...c.channels]
