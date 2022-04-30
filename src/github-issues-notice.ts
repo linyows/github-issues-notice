@@ -61,29 +61,36 @@ export class GithubIssuesNotice {
     return this.pData
   }
 
+  private get isHoliday(): boolean {
+    if (this.pIsHoliday === undefined) {
+      const date = this.config.now
+      const startWeek = 0
+      const endWeek = 6
+      const weekInt = date.getDay()
+
+      if (weekInt <= startWeek || endWeek <= weekInt) {
+        this.pIsHoliday = true
+      } else {
+        const calendarId = 'ja.japanese#holiday@group.v.calendar.google.com'
+        const calendar = CalendarApp.getCalendarById(calendarId)
+        const events = calendar.getEventsForDay(date)
+        this.pIsHoliday = events.length > 0
+      }
+    }
+
+    return this.pIsHoliday
+  }
+
   public config: Config
   private pSheet: GoogleAppsScript.Spreadsheet.Sheet
   private pSlack: Slack
   private pGithub: Github
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private pData: any[][]
+  private pIsHoliday: boolean
 
   constructor(c: Config) {
     this.config = c
-  }
-
-  public static IS_HOLIDAY(date: Date): boolean {
-    const startWeek = 0
-    const endWeek = 6
-    const weekInt = date.getDay()
-    if (weekInt <= startWeek || endWeek <= weekInt) {
-      return true
-    }
-    const calendarId = 'ja.japanese#holiday@group.v.calendar.google.com'
-    const calendar = CalendarApp.getCalendarById(calendarId)
-    const events = calendar.getEventsForDay(date)
-
-    return events.length > 0
   }
 
   public static CAPITALIZE(word: string): string {
@@ -161,10 +168,6 @@ export class GithubIssuesNotice {
   }
 
   public doJob(): void {
-    if (GithubIssuesNotice.IS_HOLIDAY(this.config.now)) {
-      return
-    }
-
     const job = this.getJobByMatchedTime()
     for (const t of job) {
       this.doTask(t)
@@ -175,7 +178,7 @@ export class GithubIssuesNotice {
     const oneD = 24
     const oneH = 3600
     const oneS = 1000
-    const now = new Date()
+    const now = this.config.now
     const period = now.getTime() - task.idle.period * oneD * oneH * oneS
     const displayRepo = task.showOrg ? repo : repo.split('/').pop()
 
@@ -429,6 +432,7 @@ export class GithubIssuesNotice {
     const onlyPullsColumn = 9
     const labelProtectionColumn = 10
     const showOrgColumn = 11
+    const noHolidayColumn = 12
 
     const nameField = 0
     const thresholdField = 1
@@ -479,6 +483,10 @@ export class GithubIssuesNotice {
       if (typeof showOrg !== 'boolean') {
         showOrg = false
       }
+      let noHoliday = task[noHolidayColumn]
+      if (typeof noHoliday !== 'boolean') {
+        noHoliday = false
+      }
 
       let s = task[statsColumn]
       if (typeof s !== 'boolean') {
@@ -519,6 +527,11 @@ export class GithubIssuesNotice {
               issueTitles: [],
             })
           }
+
+          if (this.isHoliday && !noHoliday) {
+            continue
+          }
+
           job.push({
             channels,
             times,
