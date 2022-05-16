@@ -117,7 +117,7 @@ export class Github {
   }
 
   public issueTotal(owner: string, name: string): number {
-    const url = `${this.apiEndpoint.replace('v3/', '')}graphql/`
+    const url = `${this.apiEndpoint.replace('v3/', '')}graphql`
 
     const q = `
       query {
