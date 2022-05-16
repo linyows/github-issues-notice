@@ -115,6 +115,29 @@ export class Github {
     }
     return true
   }
+
+  public issueTotal(owner: string, name: string): number {
+    const url = `${this.apiEndpoint.replace('v3/', '')}graphql/`
+
+    const q = `
+      query {
+        repository(owner:"${owner}", name:"${name}") {
+          issues(states:OPEN) {
+            totalCount
+          }
+        }
+      }
+    `
+
+    const res = UrlFetchApp.fetch(`${url}`, {
+      method: 'post',
+      headers: this.headers,
+      payload: JSON.stringify({"query": q}),
+    })
+
+    const resJson = JSON.parse(res.getContentText())
+    return resJson.data.repository.issues.totalCount
+  }
 }
 
 export type User = {
