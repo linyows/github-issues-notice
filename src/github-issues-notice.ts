@@ -214,9 +214,11 @@ export class GithubIssuesNotice {
       if (task.stats.enabled) {
         const i = this.github.issues(repo)
         const p = this.github.pulls(repo)
+        const splited = repo.split('/')
+        const issueTotal = (i.length === 100) ? this.github.issueTotal(splited[0], splited[1]) : i.length
         const labels = 'proactive'
         const a = this.github.issues(repo, { labels })
-        task.stats.issues = task.stats.issues + i.length
+        task.stats.issues = task.stats.issues + issueTotal
         task.stats.pulls = task.stats.pulls + p.length
         task.stats.proactive = task.stats.proactive + a.length
       }
