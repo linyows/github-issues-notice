@@ -180,7 +180,7 @@ export class GithubIssuesNotice {
     const oneS = 1000
     const now = this.config.now
     const period = now.getTime() - task.idle.period * oneD * oneH * oneS
-    const displayRepo = task.showOrg ? repo : repo.split('/').pop()
+    const displayRepo = task.repos.length > 1 ? ` (${task.showOrg ? repo : repo.split('/').pop()})` : ``
 
     try {
       const issues = this.github.issues(repo, {
@@ -193,7 +193,7 @@ export class GithubIssuesNotice {
         }
         this.github.closeIssue(repo, i.number)
         task.idle.issueTitles.push(
-          `<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}`
+          `<${i.html_url}|${i.title}>${displayRepo} by ${i.user.login}`
         )
       }
     } catch (e) {
@@ -222,7 +222,7 @@ export class GithubIssuesNotice {
         task.stats.pulls = task.stats.pulls + p.length
         task.stats.proactive = task.stats.proactive + a.length
       }
-      const displayRepo = task.showOrg ? repo : repo.split('/').pop()
+      const displayRepo = task.repos.length > 1 ? ` (${task.showOrg ? repo : repo.split('/').pop()})` : ``
 
       for (const l of task.labels) {
         try {
@@ -245,7 +245,7 @@ export class GithubIssuesNotice {
                   ? ':warning: Closed: '
                   : ''
               l.issueTitles.push(
-                `${warn}<${i.html_url}|${i.title}> (${displayRepo}) by ${
+                `${warn}<${i.html_url}|${i.title}>${displayRepo} by ${
                   i.user.login
                 }${task.relations ? this.buildIssueRelations(i) : ''}`
               )
@@ -263,7 +263,7 @@ export class GithubIssuesNotice {
               }
             }
             l.issueTitles.push(
-              `<${i.html_url}|${i.title}> (${displayRepo}) by ${i.user.login}${
+              `<${i.html_url}|${i.title}>${displayRepo} by ${i.user.login}${
                 task.relations ? this.buildPullRelations(i) : ''
               }`
             )
